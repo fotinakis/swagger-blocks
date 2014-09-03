@@ -9,7 +9,7 @@ RESOURCE_LISTING_JSON = open(File.expand_path('../swagger_resource_listing.json'
 # https://github.com/wordnik/swagger-codegen/blob/master/src/test/resources/petstore-1.2/pet
 API_DECLARATION_JSON = open(File.expand_path('../swagger_api_declaration.json', __FILE__)).read
 
-class SimpleObject
+class PetController
   include Swagger::Rails
 
   swagger_resource_listing do
@@ -42,7 +42,6 @@ class SimpleObject
         login_endpoint do
           key :url, 'http://petstore.swagger.wordnik.com/oauth/dialog'
         end
-
         key :tokenName, 'access_token'
       end
 
@@ -63,6 +62,7 @@ class SimpleObject
 
   swagger_api_root :pets do
     key :path, '/pet'
+    key :description, 'Operations about pets'
   end
 
   swagger_api_operation :pets do
@@ -96,97 +96,80 @@ class SimpleObject
       key :message, 'Pet not found'
     end
   end
+end
 
-  # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#51-resource-listing
+class StoreController
+  include Swagger::Rails
 
-  # swagger_api :simple do
-  #   key :apiVersion, '1.0.0'
-  #   key :swaggerVersion, '1.2'
-  #   key :basePath, 'http://localhost:8002/api'
-  #   key :resourcePath, '/pet'
-  #   key :produces, [
-  #     'application/json',
-  #     'application/xml',
-  #     'text/plain',
-  #     'text/html',
-  #   ]
-  #   key :authorizations, ['oauth2']
-  # end
+  swagger_api_root :store do
+    key :path, '/store'
+    key :description, 'Operations about store'
+  end
+end
 
-  # swagger_api :show do
-  #   key :method, 'GET'
-  #   key :summary, 'Find pet by ID'
-  #   key :notes, 'Returns a pet based on ID'
-  #   key :type, :Pet
-  #   key :nickname, :getPetById
-  #   key :produces, ['application/json', 'application/xml']
-  #   key :authorizations, ['oauth2']
-  #   parameter :petId do
-  #     key :description, 'ID of pet that needs to be fetched'
-  #     key :required, true
-  #     key :allowMultiple, false
-  #     key :type, :string
-  #     key :paramType, :path
-  #   end
-  #   response_message :bad_request do
-  #     key :message, 'Invalid ID supplied'
-  #     key :responseModel, 'Pet'
-  #   end
-  #   response_message :not_found do
-  #     key :message, 'Pet not found'
-  #   end
-  # end
+class UserController
+  include Swagger::Rails
+
+  swagger_api_root :user do
+    key :path, '/user'
+    key :description, 'Operations about user'
+  end
 end
 
 describe Swagger::Rails do
   describe 'build_resource_listing_json' do
     it 'outputs the correct data' do
-      actual = Swagger::Rails.build_resource_listing_json(SimpleObject)
-      actual = JSON.parse(actual.to_json)  # For access consistency below.
+      swaggered_classes = [
+        PetController,
+        UserController,
+        StoreController,
+      ]
+      actual = Swagger::Rails.build_root_json(swaggered_classes)
+      actual = JSON.parse(actual.to_json)  # For access consistency.
 
-      # Multiple expectations for better test diff output:
+      # Multiple expectations for better test diff output.
       data = JSON.parse(RESOURCE_LISTING_JSON)
       expect(actual['info']).to eq(data['info'])
       expect(actual['authorizations']).to eq(data['authorizations'])
       expect(actual['apis']).to eq(data['apis'])
       expect(actual).to eq(data)
     end
+    it 'errors if no swagger_resource_listing is declared' do
+      expect {
+        Swagger::Rails.build_root_json([])
+      }.to raise_error(Swagger::Rails::DeclarationError)
+    end
+    it 'errors if mulitple swagger_resource_listings are declared' do
+      expect {
+        Swagger::Rails.build_root_json([PetController, PetController])
+      }.to raise_error(Swagger::Rails::DeclarationError)
+    end
   end
   # describe 'build_api_json' do
   #   it 'outputs the correct data' do
-  #     data = {
-  #       apiVersion: '1.0.0',
-  #       swaggerVersion: '1.2',
-  #       basePath: 'http://localhost:8002/api',
-  #       resourcePath: '/pet',
-  #       produces: [
-  #         'application/json',
-  #         'application/xml',
-  #         'text/plain',
-  #         'text/html',
-  #       ],
-  #       authorizations: ['oauth2'],
-  #       apis: {
-  #         method: 'GET',
-  #         summary: 'Find pet by ID',
-  #         notes: 'Returns a pet based on ID',
-  #         type: :Pet,
-  #         nickname: :getPetById,
-  #         produces: ['application/json', 'application/xml'],
-  #         authorizations: ['oauth2'],
-  #         name: :show,
-  #         parameters: {
-  #           description: 'ID of pet that needs to be fetched',
-  #           required: true,
-  #           allowMultiple: false,
-  #           type: :string,
-  #           paramType: :path,
-  #         }
-  #       }
-  #     }
-  #     actual = Swagger::Rails.build_api_json(SimpleObject)
-  #     expect(actual[:apis]).to eq(data[:apis])
+  #     swaggered_classes = [
+  #       PetController,
+  #       UserController,
+  #       StoreController,
+  #     ]
+  #     actual = Swagger::Rails.build_api_json(:pets, swaggered_classes)
+  #     actual = JSON.parse(actual.to_json)  # For access consistency.
+
+  #     # Multiple expectations for better test diff output.
+  #     data = JSON.parse(RESOURCE_LISTING_JSON)
+  #     expect(actual['apis']).to eq(data['apis'])
+  #     expect(actual['models']).to eq(data['models'])
   #     expect(actual).to eq(data)
+  #   end
+  #   it 'errors if no swagger_resource_listing is declared' do
+  #     expect {
+  #       Swagger::Rails.build_root_json([])
+  #     }.to raise_error(Swagger::Rails::DeclarationError)
+  #   end
+  #   it 'errors if mulitple swagger_resource_listings are declared' do
+  #     expect {
+  #       Swagger::Rails.build_root_json([PetController, PetController])
+  #     }.to raise_error(Swagger::Rails::DeclarationError)
   #   end
   # end
 end

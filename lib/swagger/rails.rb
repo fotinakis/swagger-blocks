@@ -2,58 +2,81 @@ require 'json'
 require 'swagger/rails/version'
 
 module Swagger::Rails
+
   def self.included(base)
     base.extend(ClassMethods)
   end
 
-  def self.build_resource_listing_json(resource_listing_class)
-    resource_listing_class.send(:_swagger_nodes)[:resource_listing].as_json
+  # Some custom error classes.
+  class Error < Exception; end
+  class DeclarationError < Error; end
 
-    # resource_listing = {}
-    # # Build the simple resource_listing keys from the swagger_resource_listing node.
-    # resource_listing.merge!(nodes[:resource_listing].data)
+  def self.build_root_json(swaggered_classes)
+    # Get all the nodes from all the classes.
+    resource_listing_nodes = []
+    api_nodes = []
+    swaggered_classes.each do |swaggered_class|
+      # next if !swaggered_class.respond_to?(:_swagger_nodes)
+      swagger_nodes = swaggered_class.send(:_swagger_nodes)
+      resource_listing_node = swagger_nodes[:resource_listing]
+      resource_listing_nodes << resource_listing_node if resource_listing_node
+      api_nodes += swagger_nodes[:apis]
+    end
 
-    # # Build the resource_listing "apis" key from each of the swagger_api nodes.
-    # resource_listing[:apis] = {}
-    # nodes[:apis].each do |api_node|
-    #   api_data = api_node.data
-    #   api_data[:name] = api_node.name
+    if resource_listing_nodes.length == 0
+      raise Swagger::Rails::DeclarationError.new(
+        'swagger_resource_listing must be declared')
+    elsif resource_listing_nodes.length > 1
+      raise Swagger::Rails::DeclarationError.new(
+        'Only one swagger_resource_listing declaration is allowed.')
+    end
+    resource_listing_node = resource_listing_nodes.first
 
-    #   api_node.parameters.each do |parameter_node|
-    #     api_data[:parameters] ||= {}
-    #     api_data[:parameters] = parameter_node.data
-    #   end
+    # Build a ResourceNode for every ApiNode and inject it into the resource listing.
+    api_nodes.each do |api_node|
+      resource_listing_node.api do
+        key :path, api_node.data[:path]
+        key :description, api_node.data[:description]
+      end
+    end
 
-    #   resource_listing[:apis].merge!(api_data)
-    # end
+    resource_listing_node.as_json
   end
 
-  def self.build_api_json(resource_class)
+  def self.build_api_json(api_name, swaggered_classes)
   end
 
   module ClassMethods
     private
 
     def swagger_resource_listing(&block)
-      # There is only one of these allowed per object.
       @swagger_resource_listing_node ||= Swagger::Rails::ResourceListingNode.call(&block)
     end
 
     def swagger_api_root(name, &block)
-      # Each swagger_api declaration appends a new ApiNode.
-      node = Swagger::Rails::ApiNode.call(&block)
+      # Evaluate the block in the ApiNode.
+      api_node = Swagger::Rails::ApiNode.call(&block)
       @swagger_api_nodes ||= []
-      @swagger_api_nodes << node
+      @swagger_api_nodes << api_node
+
+      # Store an internal map from name to ApiNode so that swagger_api_operation blocks with the
+      # same name are merged into their parent api.
+      @swagger_name_to_api_node ||= {}
+      @swagger_name_to_api_node[name] = api_node
     end
 
     def swagger_api_operation(name, &block)
-      # Each swagger_api declaration appends a new ApiNode.
-      node = Swagger::Rails::Node.call(&block)
+      if !@swagger_name_to_api_node || !@swagger_name_to_api_node[name]
+        raise Swagger::Rails::DeclarationError.new(
+          'swagger_api_root must be declared before swagger_api_operation and names must match')
+      end
+      @swagger_name_to_api_node[name].operation(&block)
     end
 
     def _swagger_nodes
+      @swagger_resource_listing_node ||= nil  # Avoid initialization warning.
       {
-        resource_listing: @swagger_resource_listing_node || {},
+        resource_listing: @swagger_resource_listing_node,
         apis: @swagger_api_nodes || [],
       }
     end
@@ -61,7 +84,7 @@ module Swagger::Rails
 
   # -----
 
-  # Nodes that represent each object in the Swagger DSL.
+  # Base node for representing every object in the Swagger DSL.
   class Node
     attr_accessor :name
 
@@ -99,11 +122,12 @@ module Swagger::Rails
     end
 
     def key(key, value)
-      # raise TypeError.new('key values MUST be strings') if !value.is_a?(String) && !value.is_a?(Bool)
       self.data[key] = value
     end
   end
 
+  # -----
+  # Nodes for the Resource Listing.
   # -----
 
   # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#51-resource-listing
@@ -116,7 +140,15 @@ module Swagger::Rails
       self.data[:authorizations] ||= AuthorizationsNode.new
       self.data[:authorizations].authorization(name, &block)
     end
+
+    def api(&block)
+      self.data[:apis] ||= []
+      self.data[:apis] << ResourceNode.call(&block)
+    end
   end
+
+  # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#512-resource-object
+  class ResourceNode < Node; end
 
   # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#514-authorizations-object
   class AuthorizationsNode < Node
@@ -187,19 +219,21 @@ module Swagger::Rails
   class TokenEndpointNode < Node; end
 
   # -----
+  # Nodes for API Declarations.
+  # -----
 
   # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#42-file-structure
   class ApiNode < Node
-    def operations(&block)
+    def operation(&block)
       self.data[:operations] ||= []
       self.data[:operations] << OperationNode.call(&block)
     end
   end
 
   class OperationNode < Node
-    def parameter(name, &block)
+    def parameter(&block)
       self.data[:parameters] ||= []
-      self.data[:parameters] << ParameterNode.call(name: name, &block)
+      self.data[:parameters] << ParameterNode.call(&block)
     end
 
     def response_message(&block)
