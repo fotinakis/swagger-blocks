@@ -159,31 +159,31 @@ describe Swagger::Rails do
       Swagger::Rails.build_root_json([PetController, BlankController])
     end
   end
-  # describe 'build_api_json' do
-  #   it 'outputs the correct data' do
-  #     swaggered_classes = [
-  #       PetController,
-  #       UserController,
-  #       StoreController,
-  #     ]
-  #     actual = Swagger::Rails.build_api_json(:pets, swaggered_classes)
-  #     actual = JSON.parse(actual.to_json)  # For access consistency.
+  describe 'build_api_json' do
+    it 'outputs the correct data' do
+      swaggered_classes = [
+        PetController,
+        UserController,
+        StoreController,
+      ]
+      actual = Swagger::Rails.build_api_json(:pets, swaggered_classes)
+      actual = JSON.parse(actual.to_json)  # For access consistency.
 
-  #     # Multiple expectations for better test diff output.
-  #     data = JSON.parse(RESOURCE_LISTING_JSON)
-  #     expect(actual['apis']).to eq(data['apis'])
-  #     expect(actual['models']).to eq(data['models'])
-  #     expect(actual).to eq(data)
-  #   end
-  #   it 'errors if no swagger_resource_listing is declared' do
-  #     expect {
-  #       Swagger::Rails.build_root_json([])
-  #     }.to raise_error(Swagger::Rails::DeclarationError)
-  #   end
-  #   it 'errors if mulitple swagger_resource_listings are declared' do
-  #     expect {
-  #       Swagger::Rails.build_root_json([PetController, PetController])
-  #     }.to raise_error(Swagger::Rails::DeclarationError)
-  #   end
-  # end
+      # Multiple expectations for better test diff output.
+      data = JSON.parse(RESOURCE_LISTING_JSON)
+      expect(actual['apis']).to eq(data['apis'])
+      expect(actual['models']).to eq(data['models'])
+      expect(actual).to eq(data)
+    end
+    it 'errors if no swagger_resource_listing is declared' do
+      expect {
+        Swagger::Rails.build_root_json([])
+      }.to raise_error(Swagger::Rails::DeclarationError)
+    end
+    it 'errors if mulitple swagger_resource_listings are declared' do
+      expect {
+        Swagger::Rails.build_root_json([PetController, PetController])
+      }.to raise_error(Swagger::Rails::DeclarationError)
+    end
+  end
 end

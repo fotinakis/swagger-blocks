@@ -12,25 +12,7 @@ module Swagger::Rails
   class DeclarationError < Error; end
 
   def self.build_root_json(swaggered_classes)
-    # Get all the nodes from all the classes.
-    resource_listing_nodes = []
-    api_nodes = []
-    swaggered_classes.each do |swaggered_class|
-      next if !swaggered_class.respond_to?(:_swagger_nodes, true)
-      swagger_nodes = swaggered_class.send(:_swagger_nodes)
-      resource_listing_node = swagger_nodes[:resource_listing]
-      resource_listing_nodes << resource_listing_node if resource_listing_node
-      api_nodes += swagger_nodes[:apis]
-    end
-
-    if resource_listing_nodes.length == 0
-      raise Swagger::Rails::DeclarationError.new(
-        'swagger_resource_listing must be declared')
-    elsif resource_listing_nodes.length > 1
-      raise Swagger::Rails::DeclarationError.new(
-        'Only one swagger_resource_listing declaration is allowed.')
-    end
-    resource_listing_node = resource_listing_nodes.first
+    resource_listing_node, api_nodes = self.parse_swaggered_classes(swaggered_classes)
 
     # Build a ResourceNode for every ApiNode and inject it into the resource listing.
     api_nodes.each do |api_node|
@@ -49,6 +31,12 @@ module Swagger::Rails
 
   def self.build_api_json(api_name, swaggered_classes)
     # Get all the nodes from all the classes.
+    resource_listing_node, api_nodes = self.parse_swaggered_classes(swaggered_classes)
+    resource_listing_node.as_json
+  end
+
+  # Return [resource_listing_node, api_nodes] from swaggered_classes.
+  def self.parse_swaggered_classes(swaggered_classes)
     resource_listing_nodes = []
     api_nodes = []
     swaggered_classes.each do |swaggered_class|
@@ -58,13 +46,13 @@ module Swagger::Rails
       resource_listing_nodes << resource_listing_node if resource_listing_node
       api_nodes += swagger_nodes[:apis]
     end
-    resource_listing_node = validate_resource_listing(resource_listing_nodes)
+    resource_listing_node = self.get_resource_listing(resource_listing_nodes)
 
-    resource_listing_node.as_json
+    [resource_listing_node, api_nodes]
   end
 
   # Make sure there is exactly one resource_listing_node and return it.
-  private def validate_resource_listing_node(resource_listing_nodes)
+  def self.get_resource_listing(resource_listing_nodes)
     if resource_listing_nodes.length == 0
       raise Swagger::Rails::DeclarationError.new(
         'swagger_resource_listing must be declared')
