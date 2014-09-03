@@ -6,20 +6,20 @@ module Swagger::Rails
   class Error < Exception; end
   class DeclarationError < Error; end
 
-  # Inject the swagger_root, swagger_api_root, and swagger_api_operation class methods
-  # when
+  # Inject the swagger_root, swagger_api_root, and swagger_api_operation class methods.
   def self.included(base)
     base.extend(ClassMethods)
   end
 
   module_function def build_root_json(swaggered_classes)
-    root_node, api_nodes = InternalHelpers.parse_swaggered_classes(swaggered_classes)
+    root_node, api_node_map = InternalHelpers.parse_swaggered_classes(swaggered_classes)
 
     # Build a ResourceNode for every ApiNode and inject it into the resource listing.
-    api_nodes.each do |api_node|
+    # This is ordered since Ruby 1.9+ hashes are ordered: http://stackoverflow.com/a/17355411
+    api_node_map.each do |resource_name, api_node|
       # Ensure idempotence, we only need to attach each resource tree to the root tree once.
-      next if root_node.has_resource?(api_node.resource_name)
-      root_node.api(api_node.resource_name) do
+      next if root_node.has_resource?(resource_name)
+      root_node.api(resource_name) do
         key :path, api_node.data[:path]
         key :description, api_node.data[:description]
       end
@@ -29,25 +29,25 @@ module Swagger::Rails
 
   module_function def build_api_json(api_name, swaggered_classes)
     # Get all the nodes from all the classes.
-    root_node, api_nodes = InternalHelpers.parse_swaggered_classes(swaggered_classes)
+    root_node, api_node_map = InternalHelpers.parse_swaggered_classes(swaggered_classes)
     root_node.as_json
   end
 
   module InternalHelpers
-    # Return [root_node, api_nodes] from swaggered_classes.
+    # Return [root_node, api_node_map] from swaggered_classes.
     def self.parse_swaggered_classes(swaggered_classes)
       root_nodes = []
-      api_nodes = []
+      api_node_map = {}
       swaggered_classes.each do |swaggered_class|
         next if !swaggered_class.respond_to?(:_swagger_nodes, true)
         swagger_nodes = swaggered_class.send(:_swagger_nodes)
         root_node = swagger_nodes[:resource_listing]
         root_nodes << root_node if root_node
-        api_nodes += swagger_nodes[:apis]
+        api_node_map.merge!(swagger_nodes[:api_node_map])
       end
       root_node = self.get_resource_listing(root_nodes)
 
-      [root_node, api_nodes]
+      [root_node, api_node_map]
     end
 
     # Make sure there is exactly one root_node and return it.
@@ -74,28 +74,28 @@ module Swagger::Rails
       # Evaluate the block in the ApiNode.
       api_node = Swagger::Rails::ApiNode.call(&block)
       api_node.resource_name = resource_name
-      @swagger_api_nodes ||= []
-      @swagger_api_nodes << api_node
 
-      # Store an internal map from name to ApiNode so that swagger_api_operation blocks with the
-      # same name are merged into their parent api.
-      @swagger_name_to_api_node ||= {}
-      @swagger_name_to_api_node[resource_name] = api_node
+      # Store a map of resource name to ApiNode. This allows two things:
+      # - Association/merging of swagger_api_operation blocks to their parent api node.
+      # - Quick lookup of an ApiNode in build_api_json.
+      @swagger_api_node_map ||= {}
+      @swagger_api_node_map[resource_name] = api_node
     end
 
     def swagger_api_operation(name, &block)
-      if !@swagger_name_to_api_node || !@swagger_name_to_api_node[name]
+      if !@swagger_api_node_map || !@swagger_api_node_map[name]
         raise Swagger::Rails::DeclarationError.new(
           'swagger_api_root must be declared before swagger_api_operation and names must match')
       end
-      @swagger_name_to_api_node[name].operation(&block)
+      @swagger_api_node_map[name].operation(&block)
     end
 
     def _swagger_nodes
-      @swagger_root_node ||= nil  # Avoid initialization warning.
+      @swagger_root_node ||= nil  # Avoid initialization warnings.
+      @api_node_map ||= {}
       {
         resource_listing: @swagger_root_node,
-        apis: @swagger_api_nodes || [],
+        api_node_map: @swagger_api_node_map,
       }
     end
   end
