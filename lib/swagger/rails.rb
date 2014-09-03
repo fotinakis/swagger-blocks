@@ -5,8 +5,9 @@ module Swagger::Rails
   # Some custom error classes.
   class Error < Exception; end
   class DeclarationError < Error; end
+  class NotFoundError < Error; end
 
-  # Inject the swagger_root, swagger_api_root, and swagger_api_operation class methods.
+  # Inject the swagger_root and swagger_api_root class methods.
   def self.included(base)
     base.extend(ClassMethods)
   end
@@ -16,9 +17,9 @@ module Swagger::Rails
 
     # Build a ResourceNode for every ApiNode and inject it into the resource listing.
     # This is ordered since Ruby 1.9+ hashes are ordered: http://stackoverflow.com/a/17355411
-    api_node_map.each do |resource_name, api_node|
+    api_node_map.each do |api_path, api_node|
       # Ensure idempotence, we only need to attach each resource tree to the root tree once.
-      next if root_node.has_resource?(resource_name)
+      next if root_node.has_api_path?(api_path)
       root_node.api(resource_name) do
         key :path, api_node.data[:path]
         key :description, api_node.data[:description]
@@ -27,10 +28,15 @@ module Swagger::Rails
     root_node.as_json
   end
 
-  module_function def build_api_json(api_name, swaggered_classes)
+  module_function def build_api_json(api_path, swaggered_classes)
     # Get all the nodes from all the classes.
     root_node, api_node_map = InternalHelpers.parse_swaggered_classes(swaggered_classes)
-    root_node.as_json
+    api_node = api_node_map[api_path]
+    if !api_node
+      raise Swagger::Rails::NotFoundError.new(
+        "Not found: swagger_api_root with a :path key of '#{api_path}'")
+    end
+    api_node.as_json
   end
 
   module InternalHelpers
@@ -70,24 +76,20 @@ module Swagger::Rails
       @swagger_root_node ||= Swagger::Rails::ResourceListingNode.call(&block)
     end
 
-    def swagger_api_root(resource_name, &block)
-      # Evaluate the block in the ApiNode.
-      api_node = Swagger::Rails::ApiNode.call(&block)
-      api_node.resource_name = resource_name
+    def swagger_api_root(&block)
+      # Map of path names to ApiDeclarationNodes.
+      @swagger_api_root_node_map ||= {}
 
-      # Store a map of resource name to ApiNode. This allows two things:
-      # - Association/merging of swagger_api_operation blocks to their parent api node.
-      # - Quick lookup of an ApiNode in build_api_json.
-      @swagger_api_node_map ||= {}
-      @swagger_api_node_map[resource_name] = api_node
-    end
+      # Grab a previously declared node if it exists, otherwise create a new ApiDeclarationNode.
+      # This merges all declarations of swagger_api_root with the same :path key.
+      temp_api_node = Swagger::Rails::ApiDeclarationNode.call(&block)
+      path = temp_api_node.data[:path]
+      raise Swagger::Rails::DeclarationError.new('swagger_api_root must contain a :path key') if !path
+      previous_api_node = @swagger_api_root_node_map[path]
+      api_node = previous_api_node ? previous_api_node : temp_api_node
 
-    def swagger_api_operation(name, &block)
-      if !@swagger_api_node_map || !@swagger_api_node_map[name]
-        raise Swagger::Rails::DeclarationError.new(
-          'swagger_api_root must be declared before swagger_api_operation and names must match')
-      end
-      @swagger_api_node_map[name].operation(&block)
+      # Add it into the path to node map (may harmlessly overwrite the same object).
+      @swagger_api_root_node_map[path] = api_node
     end
 
     def _swagger_nodes
@@ -95,7 +97,7 @@ module Swagger::Rails
       @api_node_map ||= {}
       {
         resource_listing: @swagger_root_node,
-        api_node_map: @swagger_api_node_map,
+        api_node_map: @swagger_api_root_node_map,
       }
     end
   end
@@ -123,9 +125,7 @@ module Swagger::Rails
           result[key] = value.as_json
         elsif value.is_a?(Array)
           result[key] = []
-          value.each do |v|
-            result[key] << v.as_json
-          end
+          value.each { |v| result[key] << (v.respond_to?(:as_json) ? v.as_json : v) }
         else
           result[key] = value
         end
@@ -152,12 +152,13 @@ module Swagger::Rails
   class ResourceListingNode < Node
     def initialize(*args)
       # An internal list of the user-defined names that uniquely identify each API tree.
-      @resource_names = []
+      @api_paths = []
       super
     end
 
-    def has_resource?(resource_name)
-      @resource_names.include?(resource_name)
+    def has_api_path?(api_path)
+      api_paths = self.data[:apis].map { |x| x.data[:path] }
+      api_paths.include?(api_path)
     end
 
     def info(&block)
@@ -169,8 +170,7 @@ module Swagger::Rails
       self.data[:authorizations].authorization(name, &block)
     end
 
-    def api(resource_name, &block)
-      @resource_names << resource_name
+    def api(&block)
       self.data[:apis] ||= []
       self.data[:apis] << ResourceNode.call(&block)
     end
@@ -251,11 +251,16 @@ module Swagger::Rails
   # Nodes for API Declarations.
   # -----
 
-  # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#42-file-structure
-  class ApiNode < Node
-    # A user-managed name, like "pets", that uniquely identifies this API resource and its tree.
-    attr_accessor :resource_name
+  # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#52-api-declaration
+  class ApiDeclarationNode < Node
+    def api(&block)
+      self.data[:apis] ||= []
+      self.data[:apis] << ApiNode.call(&block)
+    end
+  end
 
+  # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#522-api-object
+  class ApiNode < Node
     def operation(&block)
       self.data[:operations] ||= []
       self.data[:operations] << OperationNode.call(&block)

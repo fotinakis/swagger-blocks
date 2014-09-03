@@ -25,6 +25,21 @@ class PetController
       key :licenseUrl, 'http://www.apache.org/licenses/LICENSE-2.0.html'
     end
 
+    api do
+      key :path, '/pet'
+      key :description, 'Operations about pets'
+    end
+
+    api do
+      key :path, '/user'
+      key :description, 'Operations about user'
+    end
+
+    api do
+      key :path, '/store'
+      key :description, 'Operations about store'
+    end
+
     authorization :oauth2 do
       key :type, 'oauth2'
 
@@ -60,40 +75,42 @@ class PetController
     end
   end
 
-  swagger_api_root :pets do
+  # All swagger_api_root declarations with the same "path" key will be merged.
+  swagger_api_root do
     key :path, '/pet'
-    key :description, 'Operations about pets'
-  end
 
-  swagger_api_operation :pets do
-    key :method, 'GET'
-    key :path, '/pet/{petId}'
-    key :summary, 'Find pet by ID'
-    key :notes, 'Returns a pet based on ID'
-    key :type, :Pet
-    key :nickname, :getPetById
-    key :produces, ['application/json', 'application/xml']
+    api do
+      key :path, '/pet/{petId}'
+      operation do
+        key :method, 'GET'
+        key :summary, 'Find pet by ID'
+        key :notes, 'Returns a pet based on ID'
+        key :type, :Pet
+        key :nickname, :getPetById
+        key :produces, ['application/json', 'application/xml']
 
-    parameter do
-      key :name, :petId
-      key :description, 'ID of pet that needs to be fetched'
-      key :required, true
-      key :type, :integer
-      key :format, :int64
-      key :paramType, :path
-      key :minimum, '1.0'
-      key :maximum, '100000.0'
-    end
+        parameter do
+          key :name, :petId
+          key :description, 'ID of pet that needs to be fetched'
+          key :required, true
+          key :type, :integer
+          key :format, :int64
+          key :paramType, :path
+          key :minimum, '1.0'
+          key :maximum, '100000.0'
+        end
 
-    response_message do
-      key :code, 400
-      key :message, 'Invalid ID supplied'
-      key :responseModel, 'Pet'
-    end
+        response_message do
+          key :code, 400
+          key :message, 'Invalid ID supplied'
+          key :responseModel, 'Pet'
+        end
 
-    response_message do
-      key :code, 404
-      key :message, 'Pet not found'
+        response_message do
+          key :code, 404
+          key :message, 'Pet not found'
+        end
+      end
     end
   end
 end
@@ -101,18 +118,16 @@ end
 class StoreController
   include Swagger::Rails
 
-  swagger_api_root :store do
+  swagger_api_root do
     key :path, '/store'
-    key :description, 'Operations about store'
   end
 end
 
 class UserController
   include Swagger::Rails
 
-  swagger_api_root :user do
+  swagger_api_root do
     key :path, '/user'
-    key :description, 'Operations about user'
   end
 end
 
@@ -121,7 +136,7 @@ end
 
 
 describe Swagger::Rails do
-  describe 'build_resource_listing_json' do
+  describe 'build_root_json' do
     it 'outputs the correct data' do
       swaggered_classes = [
         PetController,
@@ -166,7 +181,7 @@ describe Swagger::Rails do
         UserController,
         StoreController,
       ]
-      actual = Swagger::Rails.build_api_json(:pets, swaggered_classes)
+      actual = Swagger::Rails.build_api_json('/pet', swaggered_classes)
       actual = JSON.parse(actual.to_json)  # For access consistency.
 
       # Multiple expectations for better test diff output.
