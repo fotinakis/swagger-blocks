@@ -170,7 +170,7 @@ describe Swagger::Rails do
       actual = JSON.parse(actual.to_json)  # For access consistency.
 
       # Multiple expectations for better test diff output.
-      data = JSON.parse(RESOURCE_LISTING_JSON)
+      data = JSON.parse(API_DECLARATION_JSON)
       expect(actual['apis']).to eq(data['apis'])
       expect(actual['models']).to eq(data['models'])
       expect(actual).to eq(data)
