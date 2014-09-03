@@ -116,6 +116,10 @@ class UserController
   end
 end
 
+class BlankController
+end
+
+
 describe Swagger::Rails do
   describe 'build_resource_listing_json' do
     it 'outputs the correct data' do
@@ -134,6 +138,13 @@ describe Swagger::Rails do
       expect(actual['apis']).to eq(data['apis'])
       expect(actual).to eq(data)
     end
+    it 'is idempotent' do
+      swaggered_classes = [PetController, UserController, StoreController]
+      actual = JSON.parse(Swagger::Rails.build_root_json(swaggered_classes).to_json)
+      actual = JSON.parse(Swagger::Rails.build_root_json(swaggered_classes).to_json)
+      data = JSON.parse(RESOURCE_LISTING_JSON)
+      expect(actual).to eq(data)
+    end
     it 'errors if no swagger_resource_listing is declared' do
       expect {
         Swagger::Rails.build_root_json([])
@@ -143,6 +154,9 @@ describe Swagger::Rails do
       expect {
         Swagger::Rails.build_root_json([PetController, PetController])
       }.to raise_error(Swagger::Rails::DeclarationError)
+    end
+    it 'does not error if given non-swaggered classes' do
+      Swagger::Rails.build_root_json([PetController, BlankController])
     end
   end
   # describe 'build_api_json' do

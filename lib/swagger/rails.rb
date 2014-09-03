@@ -16,7 +16,7 @@ module Swagger::Rails
     resource_listing_nodes = []
     api_nodes = []
     swaggered_classes.each do |swaggered_class|
-      # next if !swaggered_class.respond_to?(:_swagger_nodes)
+      next if !swaggered_class.respond_to?(:_swagger_nodes, true)
       swagger_nodes = swaggered_class.send(:_swagger_nodes)
       resource_listing_node = swagger_nodes[:resource_listing]
       resource_listing_nodes << resource_listing_node if resource_listing_node
@@ -34,7 +34,11 @@ module Swagger::Rails
 
     # Build a ResourceNode for every ApiNode and inject it into the resource listing.
     api_nodes.each do |api_node|
-      resource_listing_node.api do
+      # Ensure idempotence of this method, we only need to attach each API tree to the
+      # resource listing tree once.
+      next if resource_listing_node.has_resource?(api_node.resource_name)
+
+      resource_listing_node.api(api_node.resource_name) do
         key :path, api_node.data[:path]
         key :description, api_node.data[:description]
       end
@@ -44,6 +48,31 @@ module Swagger::Rails
   end
 
   def self.build_api_json(api_name, swaggered_classes)
+    # Get all the nodes from all the classes.
+    resource_listing_nodes = []
+    api_nodes = []
+    swaggered_classes.each do |swaggered_class|
+      next if !swaggered_class.respond_to?(:_swagger_nodes, true)
+      swagger_nodes = swaggered_class.send(:_swagger_nodes)
+      resource_listing_node = swagger_nodes[:resource_listing]
+      resource_listing_nodes << resource_listing_node if resource_listing_node
+      api_nodes += swagger_nodes[:apis]
+    end
+    resource_listing_node = validate_resource_listing(resource_listing_nodes)
+
+    resource_listing_node.as_json
+  end
+
+  # Make sure there is exactly one resource_listing_node and return it.
+  private def validate_resource_listing_node(resource_listing_nodes)
+    if resource_listing_nodes.length == 0
+      raise Swagger::Rails::DeclarationError.new(
+        'swagger_resource_listing must be declared')
+    elsif resource_listing_nodes.length > 1
+      raise Swagger::Rails::DeclarationError.new(
+        'Only one swagger_resource_listing declaration is allowed.')
+    end
+    resource_listing_nodes.first
   end
 
   module ClassMethods
@@ -53,16 +82,17 @@ module Swagger::Rails
       @swagger_resource_listing_node ||= Swagger::Rails::ResourceListingNode.call(&block)
     end
 
-    def swagger_api_root(name, &block)
+    def swagger_api_root(resource_name, &block)
       # Evaluate the block in the ApiNode.
       api_node = Swagger::Rails::ApiNode.call(&block)
+      api_node.resource_name = resource_name
       @swagger_api_nodes ||= []
       @swagger_api_nodes << api_node
 
       # Store an internal map from name to ApiNode so that swagger_api_operation blocks with the
       # same name are merged into their parent api.
       @swagger_name_to_api_node ||= {}
-      @swagger_name_to_api_node[name] = api_node
+      @swagger_name_to_api_node[resource_name] = api_node
     end
 
     def swagger_api_operation(name, &block)
@@ -132,6 +162,16 @@ module Swagger::Rails
 
   # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#51-resource-listing
   class ResourceListingNode < Node
+    def initialize(*args)
+      # An internal list of the user-defined names that uniquely identify each API tree.
+      @resource_names = []
+      super
+    end
+
+    def has_resource?(resource_name)
+      @resource_names.include?(resource_name)
+    end
+
     def info(&block)
       self.data[:info] = InfoNode.call(&block)
     end
@@ -141,7 +181,8 @@ module Swagger::Rails
       self.data[:authorizations].authorization(name, &block)
     end
 
-    def api(&block)
+    def api(resource_name, &block)
+      @resource_names << resource_name
       self.data[:apis] ||= []
       self.data[:apis] << ResourceNode.call(&block)
     end
@@ -224,6 +265,9 @@ module Swagger::Rails
 
   # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#42-file-structure
   class ApiNode < Node
+    # A user-managed name, like "pets", that uniquely identifies this API resource and its tree.
+    attr_accessor :resource_name
+
     def operation(&block)
       self.data[:operations] ||= []
       self.data[:operations] << OperationNode.call(&block)
