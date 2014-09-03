@@ -12,7 +12,7 @@ API_DECLARATION_JSON = open(File.expand_path('../swagger_api_declaration.json', 
 class PetController
   include Swagger::Rails
 
-  swagger_resource_listing do
+  swagger_root do
     key :swaggerVersion, '1.2'
     key :apiVersion, '1.0.0'
 
@@ -145,12 +145,12 @@ describe Swagger::Rails do
       data = JSON.parse(RESOURCE_LISTING_JSON)
       expect(actual).to eq(data)
     end
-    it 'errors if no swagger_resource_listing is declared' do
+    it 'errors if no swagger_root is declared' do
       expect {
         Swagger::Rails.build_root_json([])
       }.to raise_error(Swagger::Rails::DeclarationError)
     end
-    it 'errors if mulitple swagger_resource_listings are declared' do
+    it 'errors if mulitple swagger_roots are declared' do
       expect {
         Swagger::Rails.build_root_json([PetController, PetController])
       }.to raise_error(Swagger::Rails::DeclarationError)
@@ -175,12 +175,12 @@ describe Swagger::Rails do
       expect(actual['models']).to eq(data['models'])
       expect(actual).to eq(data)
     end
-    it 'errors if no swagger_resource_listing is declared' do
+    it 'errors if no swagger_root is declared' do
       expect {
         Swagger::Rails.build_root_json([])
       }.to raise_error(Swagger::Rails::DeclarationError)
     end
-    it 'errors if mulitple swagger_resource_listings are declared' do
+    it 'errors if mulitple swagger_roots are declared' do
       expect {
         Swagger::Rails.build_root_json([PetController, PetController])
       }.to raise_error(Swagger::Rails::DeclarationError)

@@ -2,72 +2,72 @@ require 'json'
 require 'swagger/rails/version'
 
 module Swagger::Rails
-
-  def self.included(base)
-    base.extend(ClassMethods)
-  end
-
   # Some custom error classes.
   class Error < Exception; end
   class DeclarationError < Error; end
 
+  # Inject the swagger_root, swagger_api_root, and swagger_api_operation class methods.
+  def self.included(base)
+    base.extend(ClassMethods)
+  end
+
   def self.build_root_json(swaggered_classes)
-    resource_listing_node, api_nodes = self.parse_swaggered_classes(swaggered_classes)
+    root_node, api_nodes = self.parse_swaggered_classes(swaggered_classes)
 
     # Build a ResourceNode for every ApiNode and inject it into the resource listing.
     api_nodes.each do |api_node|
       # Ensure idempotence of this method, we only need to attach each API tree to the
       # resource listing tree once.
-      next if resource_listing_node.has_resource?(api_node.resource_name)
+      next if root_node.has_resource?(api_node.resource_name)
 
-      resource_listing_node.api(api_node.resource_name) do
+      root_node.api(api_node.resource_name) do
         key :path, api_node.data[:path]
         key :description, api_node.data[:description]
       end
     end
 
-    resource_listing_node.as_json
+    root_node.as_json
   end
 
   def self.build_api_json(api_name, swaggered_classes)
     # Get all the nodes from all the classes.
-    resource_listing_node, api_nodes = self.parse_swaggered_classes(swaggered_classes)
-    resource_listing_node.as_json
+    root_node, api_nodes = self.parse_swaggered_classes(swaggered_classes)
+    root_node.as_json
   end
 
-  # Return [resource_listing_node, api_nodes] from swaggered_classes.
+  # Return [root_node, api_nodes] from swaggered_classes.
   def self.parse_swaggered_classes(swaggered_classes)
-    resource_listing_nodes = []
+    root_nodes = []
     api_nodes = []
     swaggered_classes.each do |swaggered_class|
       next if !swaggered_class.respond_to?(:_swagger_nodes, true)
       swagger_nodes = swaggered_class.send(:_swagger_nodes)
-      resource_listing_node = swagger_nodes[:resource_listing]
-      resource_listing_nodes << resource_listing_node if resource_listing_node
+      root_node = swagger_nodes[:resource_listing]
+      root_nodes << root_node if root_node
       api_nodes += swagger_nodes[:apis]
     end
-    resource_listing_node = self.get_resource_listing(resource_listing_nodes)
+    root_node = self.get_resource_listing(root_nodes)
 
-    [resource_listing_node, api_nodes]
+    [root_node, api_nodes]
   end
 
-  # Make sure there is exactly one resource_listing_node and return it.
-  def self.get_resource_listing(resource_listing_nodes)
-    if resource_listing_nodes.length == 0
+  # Make sure there is exactly one root_node and return it.
+  def self.get_resource_listing(root_nodes)
+    if root_nodes.length == 0
       raise Swagger::Rails::DeclarationError.new(
-        'swagger_resource_listing must be declared')
-    elsif resource_listing_nodes.length > 1
+        'swagger_root must be declared')
+    elsif root_nodes.length > 1
       raise Swagger::Rails::DeclarationError.new(
-        'Only one swagger_resource_listing declaration is allowed.')
+        'Only one swagger_root declaration is allowed.')
     end
-    resource_listing_nodes.first
+    root_nodes.first
   end
 
   module ClassMethods
     private
 
-    def swagger_resource_listing(&block)
-      @swagger_resource_listing_node ||= Swagger::Rails::ResourceListingNode.call(&block)
+    def swagger_root(&block)
+      @swagger_root_node ||= Swagger::Rails::ResourceListingNode.call(&block)
     end
 
     def swagger_api_root(resource_name, &block)
@@ -92,9 +92,9 @@ module Swagger::Rails
     end
 
     def _swagger_nodes
-      @swagger_resource_listing_node ||= nil  # Avoid initialization warning.
+      @swagger_root_node ||= nil  # Avoid initialization warning.
       {
-        resource_listing: @swagger_resource_listing_node,
+        resource_listing: @swagger_root_node,
         apis: @swagger_api_nodes || [],
       }
     end
