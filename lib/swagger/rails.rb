@@ -296,6 +296,10 @@ module Swagger::Rails
       self.data[:authorizations] ||= ApiAuthorizationsNode.new
       self.data[:authorizations].authorization(name, &block)
     end
+
+    def items(&block)
+      self.data[:items] = ItemsNode.call(&block)
+    end
   end
 
   # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#514-authorizations-object
@@ -325,6 +329,9 @@ module Swagger::Rails
   # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#5211-scope-object
   # NOTE: in the spec this is different than Resource Listing's scope object.
   class ApiAuthorizationScopeNode < Node; end
+
+  # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#434-items-object
+  class ItemsNode < Node; end
 
   # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#524-parameter-object
   class ParameterNode < Node; end

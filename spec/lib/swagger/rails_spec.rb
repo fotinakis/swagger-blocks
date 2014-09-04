@@ -133,9 +133,9 @@ class PetController
         key :type, :array
         key :nickname, :partialUpdate
 
-        # item do
-        #   key :'$ref', :Pet
-        # end
+        items do
+          key :'$ref', :Pet
+        end
 
         key :produces, [
           'application/json',
@@ -188,9 +188,9 @@ class PetController
         key :type, :array
         key :nickname, :findPetsByStatus
 
-        # item do
-        #   key :'$ref', :Pet
-        # end
+        items do
+          key :'$ref', :Pet
+        end
 
         parameter do
           key :name, :status
