@@ -297,8 +297,7 @@ class OtherModelsContainer
   end
 
   swagger_model :Category do
-    key :id, :Pet
-    key :required, [:id, :name]
+    key :id, :Category
 
     property :id do
       key :type, :integer
@@ -381,6 +380,19 @@ describe Swagger::Rails do
       expect(actual['apis'][0]['operations']).to eq(data['apis'][0]['operations'])
       expect(actual['apis']).to eq(data['apis'])
       expect(actual['models']).to eq(data['models'])
+      expect(actual).to eq(data)
+    end
+    it 'is idempotent' do
+      swaggered_classes = [
+        PetController,
+        UserController,
+        StoreController,
+        TagModel,
+        OtherModelsContainer,
+      ]
+      actual = JSON.parse(Swagger::Rails.build_api_json(:pets, swaggered_classes).to_json)
+      actual = JSON.parse(Swagger::Rails.build_api_json(:pets, swaggered_classes).to_json)
+      data = JSON.parse(API_DECLARATION_JSON)
       expect(actual).to eq(data)
     end
     it 'errors if no swagger_root is declared' do

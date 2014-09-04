@@ -13,16 +13,24 @@ module Swagger::Rails
   end
 
   module_function def build_root_json(swaggered_classes)
-    root_node, _ = InternalHelpers.parse_swaggered_classes(swaggered_classes)
-    root_node.as_json
+    data = InternalHelpers.parse_swaggered_classes(swaggered_classes)
+    data[:root_node].as_json
   end
 
   module_function def build_api_json(resource_name, swaggered_classes)
-    _, api_node_map = InternalHelpers.parse_swaggered_classes(swaggered_classes)
-    api_node = api_node_map[resource_name.to_sym]
+    data = InternalHelpers.parse_swaggered_classes(swaggered_classes)
+    api_node = data[:api_node_map][resource_name.to_sym]
     raise Swagger::Rails::NotFoundError.new(
       "Not found: swagger_api_root named #{resource_name}") if !api_node
-    api_node.as_json
+
+    # Aggregate all model definitions into a new ModelsNode tree and add it to the JSON.
+    temp_models_node = Swagger::Rails::ModelsNode.call(name: 'models') { }
+    data[:models_nodes].each do |models_node|
+      temp_models_node.merge!(models_node)
+    end
+    result = api_node.as_json
+    result.merge!(temp_models_node.as_json) if temp_models_node
+    result
   end
 
   module InternalHelpers
@@ -30,15 +38,22 @@ module Swagger::Rails
     def self.parse_swaggered_classes(swaggered_classes)
       root_nodes = []
       api_node_map = {}
+      models_nodes = []
       swaggered_classes.each do |swaggered_class|
         next if !swaggered_class.respond_to?(:_swagger_nodes, true)
         swagger_nodes = swaggered_class.send(:_swagger_nodes)
         root_node = swagger_nodes[:resource_listing_node]
         root_nodes << root_node if root_node
         api_node_map.merge!(swagger_nodes[:api_node_map])
+        models_nodes << swagger_nodes[:models_node] if swagger_nodes[:models_node]
       end
       root_node = self.get_resource_listing(root_nodes)
-      [root_node, api_node_map]
+
+      {
+        root_node: root_node,
+        api_node_map: api_node_map,
+        models_nodes: models_nodes,
+      }
     end
 
     # Make sure there is exactly one root_node and return it.
@@ -99,7 +114,7 @@ module Swagger::Rails
     def _swagger_nodes
       @swagger_root_node ||= nil  # Avoid initialization warnings.
       @swagger_api_root_node_map ||= {}
-      @swagger_models ||= []
+      @swagger_models_node ||= nil
       {
         resource_listing_node: @swagger_root_node,
         api_node_map: @swagger_api_root_node_map,
@@ -353,6 +368,10 @@ module Swagger::Rails
 
   # http://goo.gl/PvwUXj#526-models-object
   class ModelsNode < Node
+    def merge!(other_models_node)
+      self.data.merge!(other_models_node.data)
+    end
+
     def model(name, &block)
       self.data[name] ||= ModelNode.call(&block)
     end
