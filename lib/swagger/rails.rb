@@ -161,7 +161,7 @@ module Swagger::Rails
     end
 
     def authorization(name, &block)
-      self.data[:authorizations] ||= AuthorizationsNode.new
+      self.data[:authorizations] ||= ResourceListingAuthorizationsNode.new
       self.data[:authorizations].authorization(name, &block)
     end
 
@@ -175,14 +175,16 @@ module Swagger::Rails
   class ResourceNode < Node; end
 
   # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#514-authorizations-object
-  class AuthorizationsNode < Node
+  # NOTE: in the spec this is different than API Declaration authorizations.
+  class ResourceListingAuthorizationsNode < Node
     def authorization(name, &block)
-      self.data[name] = AuthorizationNode.call(&block)
+      self.data[name] = ResourceListingAuthorizationNode.call(&block)
     end
   end
 
-  # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#513-info-object
-  class AuthorizationNode < Node
+  # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#515-authorization-object
+  # NOTE: in the spec this is different than API Declaration authorization.
+  class ResourceListingAuthorizationNode < Node
     GRANT_TYPES = [:implicit, :authorization_code].freeze
 
     def scope(&block)
@@ -259,8 +261,8 @@ module Swagger::Rails
       # - The API Object describes one or more operations on a single path. In the apis array,
       #   there MUST be only one API Object per path.
       temp_api_node = ApiNode.call(&block)
-      api_node = self.data[:apis].select do |api_node|
-        api_node.data[:path] == temp_api_node.data[:path]
+      api_node = self.data[:apis].select do |api|
+        api.data[:path] == temp_api_node.data[:path]
       end[0]  # Embrace Ruby wtfs.
 
       if api_node
@@ -293,8 +295,25 @@ module Swagger::Rails
     end
 
     def authorization(name, &block)
-      self.data[:authorizations] ||= AuthorizationsNode.new
+      self.data[:authorizations] ||= ApiAuthorizationsNode.new
       self.data[:authorizations].authorization(name, &block)
+    end
+  end
+
+  # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#514-authorizations-object
+  # NOTE: in the spec this is different than Resource Listing's authorizations.
+  class ApiAuthorizationsNode < Node
+    def authorization(name, &block)
+      self.data[name] ||= []
+      self.data[name] << ApiAuthorizationNode.call(parent_data_reference: self.data[name], &block)
+    end
+  end
+
+  # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#515-authorization-object
+  # NOTE: in the spec this is different than Resource Listing's authorization.
+  class ApiAuthorizationNode < Node
+    def scope(parent_data_reference:, &block)
+      parent_data_reference << Node.call(&block)
     end
   end
 

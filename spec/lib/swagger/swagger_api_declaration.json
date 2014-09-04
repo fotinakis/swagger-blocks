@@ -47,9 +47,6 @@
           "summary": "partial updates to a pet",
           "notes": "",
           "type": "array",
-          "items": {
-            "$ref": "Pet"
-          },
           "nickname": "partialUpdate",
           "produces": [
             "application/json",
@@ -59,14 +56,6 @@
             "application/json",
             "application/xml"
           ],
-          "authorizations": {
-            "oauth2": [
-              {
-                "scope": "test:anything",
-                "description": "anything"
-              }
-            ]
-          },
           "parameters": [
             {
               "name": "petId",
@@ -100,9 +89,6 @@
           "summary": "Finds Pets by status",
           "notes": "Multiple status values can be provided with comma seperated strings",
           "type": "array",
-          "items": {
-            "$ref": "Pet"
-          },
           "nickname": "findPetsByStatus",
           "parameters": [
             {

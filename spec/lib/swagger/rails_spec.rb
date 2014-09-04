@@ -146,13 +146,13 @@ class PetController
           'application/xml',
         ]
 
-        authorization :oauth2 do
-          key :type, 'oauth2'
-          scope do
-            key :scope, 'test:anything'
-            key :description, 'anything'
-          end
-        end
+        # authorization :oauth2 do
+        #   key :type, 'oauth2'
+        #   scope do
+        #     key :scope, 'test:anything'
+        #     key :description, 'anything'
+        #   end
+        # end
 
         parameter do
           key :name, :petId
@@ -193,17 +193,7 @@ class PetController
         #   key :'$ref', :Pet
         # end
 
-        key :produces, [
-          'application/json',
-          'application/xml',
-        ]
-        key :consumes, [
-          'application/json',
-          'application/xml',
-        ]
-
         authorization :oauth2 do
-          key :type, 'oauth2'
           scope do
             key :scope, 'test:anything'
             key :description, 'anything'
