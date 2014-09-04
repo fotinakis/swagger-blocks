@@ -1,6 +1,5 @@
 require 'json'
-require 'swagger/rails'
-
+require 'swagger_ruby'
 
 # Test data originally based on the Swagger UI example data:
 # https://github.com/wordnik/swagger-codegen/blob/master/src/test/resources/petstore-1.2/api-docs
@@ -9,7 +8,7 @@ RESOURCE_LISTING_JSON = open(File.expand_path('../swagger_resource_listing.json'
 API_DECLARATION_JSON = open(File.expand_path('../swagger_api_declaration.json', __FILE__)).read
 
 class PetController
-  include Swagger::Rails
+  include Swagger::Ruby
 
   swagger_root do
     key :swaggerVersion, '1.2'
@@ -217,7 +216,7 @@ end
 
 
 class StoreController
-  include Swagger::Rails
+  include Swagger::Ruby
 
   swagger_api_root :stores do
     key :path, '/store'
@@ -226,7 +225,7 @@ end
 
 
 class UserController
-  include Swagger::Rails
+  include Swagger::Ruby
 
   swagger_api_root :users do
     key :path, '/user'
@@ -235,7 +234,7 @@ end
 
 
 class TagModel
-  include Swagger::Rails
+  include Swagger::Ruby
 
   swagger_model :Tag do
     key :id, :Tag
@@ -253,7 +252,7 @@ end
 
 
 class OtherModelsContainer
-  include Swagger::Rails
+  include Swagger::Ruby
 
   swagger_model :Pet do
     key :id, :Pet
@@ -314,7 +313,7 @@ end
 class BlankController; end
 
 
-describe Swagger::Rails do
+describe Swagger::Ruby do
   describe 'build_root_json' do
     it 'outputs the correct data' do
       swaggered_classes = [
@@ -324,7 +323,7 @@ describe Swagger::Rails do
         TagModel,
         OtherModelsContainer,
       ]
-      actual = Swagger::Rails.build_root_json(swaggered_classes)
+      actual = Swagger::Ruby.build_root_json(swaggered_classes)
 
       # Multiple expectations for better test diff output.
       actual = JSON.parse(actual.to_json)  # For access consistency.
@@ -338,23 +337,23 @@ describe Swagger::Rails do
     end
     it 'is idempotent' do
       swaggered_classes = [PetController, UserController, StoreController]
-      actual = JSON.parse(Swagger::Rails.build_root_json(swaggered_classes).to_json)
-      actual = JSON.parse(Swagger::Rails.build_root_json(swaggered_classes).to_json)
+      actual = JSON.parse(Swagger::Ruby.build_root_json(swaggered_classes).to_json)
+      actual = JSON.parse(Swagger::Ruby.build_root_json(swaggered_classes).to_json)
       data = JSON.parse(RESOURCE_LISTING_JSON)
       expect(actual).to eq(data)
     end
     it 'errors if no swagger_root is declared' do
       expect {
-        Swagger::Rails.build_root_json([])
-      }.to raise_error(Swagger::Rails::DeclarationError)
+        Swagger::Ruby.build_root_json([])
+      }.to raise_error(Swagger::Ruby::DeclarationError)
     end
     it 'errors if mulitple swagger_roots are declared' do
       expect {
-        Swagger::Rails.build_root_json([PetController, PetController])
-      }.to raise_error(Swagger::Rails::DeclarationError)
+        Swagger::Ruby.build_root_json([PetController, PetController])
+      }.to raise_error(Swagger::Ruby::DeclarationError)
     end
     it 'does not error if given non-swaggered classes' do
-      Swagger::Rails.build_root_json([PetController, BlankController])
+      Swagger::Ruby.build_root_json([PetController, BlankController])
     end
   end
   describe 'build_api_json' do
@@ -366,7 +365,7 @@ describe Swagger::Rails do
         TagModel,
         OtherModelsContainer,
       ]
-      actual = Swagger::Rails.build_api_json(:pets, swaggered_classes)
+      actual = Swagger::Ruby.build_api_json(:pets, swaggered_classes)
 
       # Multiple expectations for better test diff output.
       actual = JSON.parse(actual.to_json)  # For access consistency.
@@ -390,20 +389,20 @@ describe Swagger::Rails do
         TagModel,
         OtherModelsContainer,
       ]
-      actual = JSON.parse(Swagger::Rails.build_api_json(:pets, swaggered_classes).to_json)
-      actual = JSON.parse(Swagger::Rails.build_api_json(:pets, swaggered_classes).to_json)
+      actual = JSON.parse(Swagger::Ruby.build_api_json(:pets, swaggered_classes).to_json)
+      actual = JSON.parse(Swagger::Ruby.build_api_json(:pets, swaggered_classes).to_json)
       data = JSON.parse(API_DECLARATION_JSON)
       expect(actual).to eq(data)
     end
     it 'errors if no swagger_root is declared' do
       expect {
-        Swagger::Rails.build_root_json([])
-      }.to raise_error(Swagger::Rails::DeclarationError)
+        Swagger::Ruby.build_root_json([])
+      }.to raise_error(Swagger::Ruby::DeclarationError)
     end
     it 'errors if mulitple swagger_roots are declared' do
       expect {
-        Swagger::Rails.build_root_json([PetController, PetController])
-      }.to raise_error(Swagger::Rails::DeclarationError)
+        Swagger::Ruby.build_root_json([PetController, PetController])
+      }.to raise_error(Swagger::Ruby::DeclarationError)
     end
   end
 end

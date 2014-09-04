@@ -1,5 +1,5 @@
 module Swagger
-  module Rails
+  module Ruby
     VERSION = '0.0.1'
   end
 end
