@@ -9,8 +9,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ['Mike Fotinakis']
   spec.email         = ['mike@fotinakis.com']
   spec.summary       = %q{Define and generate Swagger JSON files in Ruby.}
-  spec.description   = %q{}
-  spec.homepage      = ''
+  spec.description   = %q{Define and generate Swagger JSON files in Ruby.}
+  spec.homepage      = 'https://github.com/fotinakis/swagger-ruby'
   spec.license       = 'MIT'
 
   spec.files         = `git ls-files -z`.split('\x0')
