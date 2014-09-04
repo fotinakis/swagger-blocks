@@ -56,6 +56,14 @@
             "application/json",
             "application/xml"
           ],
+          "authorizations": {
+            "oauth2": [
+              {
+                "scope": "test:anything",
+                "description": "anything"
+              }
+            ]
+          },
           "parameters": [
             {
               "name": "petId",

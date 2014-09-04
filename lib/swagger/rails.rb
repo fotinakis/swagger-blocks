@@ -106,10 +106,8 @@ module Swagger::Rails
     def self.call(name: nil, &block)
       # Create a new instance and evaluate the block into it.
       instance = new
+      instance.name = name if name # Set the first parameter given as the name.
       instance.instance_eval(&block)
-
-      # Set the first parameter given as the name.
-      instance.name = name if name
       instance
     end
 
@@ -304,18 +302,29 @@ module Swagger::Rails
   # NOTE: in the spec this is different than Resource Listing's authorizations.
   class ApiAuthorizationsNode < Node
     def authorization(name, &block)
-      self.data[name] ||= []
-      self.data[name] << ApiAuthorizationNode.call(parent_data_reference: self.data[name], &block)
+      self.data[name] ||= ApiAuthorizationNode.call(&block)
     end
   end
 
   # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#515-authorization-object
   # NOTE: in the spec this is different than Resource Listing's authorization.
   class ApiAuthorizationNode < Node
-    def scope(parent_data_reference:, &block)
-      parent_data_reference << Node.call(&block)
+    def as_json
+      # Special case: the API Authorization object is weirdly the only array of hashes.
+      # Override the default hash behavior and return an array.
+      self.data[:_scopes] ||= []
+      self.data[:_scopes].map { |s| s.as_json }
+    end
+
+    def scope(&block)
+      self.data[:_scopes] ||= []
+      self.data[:_scopes] << ApiAuthorizationScopeNode.call(&block)
     end
   end
+
+  # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#5211-scope-object
+  # NOTE: in the spec this is different than Resource Listing's scope object.
+  class ApiAuthorizationScopeNode < Node; end
 
   # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#524-parameter-object
   class ParameterNode < Node; end
