@@ -2,7 +2,7 @@ require 'json'
 require 'swagger/rails'
 
 
-# Some test data directly copied from the swagger docs:
+# Some test data copied from the swagger docs:
 #
 # https://github.com/wordnik/swagger-codegen/blob/master/src/test/resources/petstore-1.2/api-docs
 RESOURCE_LISTING_JSON = open(File.expand_path('../swagger_resource_listing.json', __FILE__)).read
@@ -76,18 +76,28 @@ class PetController
   end
 
   # All swagger_api_root declarations with the same "path" key will be merged.
-  swagger_api_root do
-    key :path, '/pet'
+  swagger_api_root :pets do
+    key :swaggerVersion, '1.2'
+    key :apiVersion, '1.0.0'
+    key :basePath, 'http://petstore.swagger.wordnik.com/api'
+    key :resourcePath, '/pet'
+
+    key :produces, [
+      'application/json',
+      'application/xml',
+      'text/plain',
+      'text/html',
+    ]
 
     api do
       key :path, '/pet/{petId}'
+
       operation do
         key :method, 'GET'
         key :summary, 'Find pet by ID'
         key :notes, 'Returns a pet based on ID'
         key :type, :Pet
         key :nickname, :getPetById
-        key :produces, ['application/json', 'application/xml']
 
         parameter do
           key :name, :petId
@@ -103,7 +113,6 @@ class PetController
         response_message do
           key :code, 400
           key :message, 'Invalid ID supplied'
-          key :responseModel, 'Pet'
         end
 
         response_message do
@@ -118,7 +127,7 @@ end
 class StoreController
   include Swagger::Rails
 
-  swagger_api_root do
+  swagger_api_root :stores do
     key :path, '/store'
   end
 end
@@ -126,7 +135,7 @@ end
 class UserController
   include Swagger::Rails
 
-  swagger_api_root do
+  swagger_api_root :users do
     key :path, '/user'
   end
 end
@@ -181,7 +190,7 @@ describe Swagger::Rails do
         UserController,
         StoreController,
       ]
-      actual = Swagger::Rails.build_api_json('/pet', swaggered_classes)
+      actual = Swagger::Rails.build_api_json(:pets, swaggered_classes)
       actual = JSON.parse(actual.to_json)  # For access consistency.
 
       # Multiple expectations for better test diff output.

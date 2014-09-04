@@ -19,7 +19,6 @@
           "notes": "Returns a pet based on ID",
           "type": "Pet",
           "nickname": "getPetById",
-          "authorizations": {},
           "parameters": [
             {
               "name": "petId",

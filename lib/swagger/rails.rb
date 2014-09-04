@@ -13,28 +13,17 @@ module Swagger::Rails
   end
 
   module_function def build_root_json(swaggered_classes)
-    root_node, api_node_map = InternalHelpers.parse_swaggered_classes(swaggered_classes)
-
-    # Build a ResourceNode for every ApiNode and inject it into the resource listing.
-    # This is ordered since Ruby 1.9+ hashes are ordered: http://stackoverflow.com/a/17355411
-    api_node_map.each do |api_path, api_node|
-      # Ensure idempotence, we only need to attach each resource tree to the root tree once.
-      next if root_node.has_api_path?(api_path)
-      root_node.api(resource_name) do
-        key :path, api_node.data[:path]
-        key :description, api_node.data[:description]
-      end
-    end
+    root_node, _ = InternalHelpers.parse_swaggered_classes(swaggered_classes)
     root_node.as_json
   end
 
-  module_function def build_api_json(api_path, swaggered_classes)
+  module_function def build_api_json(resource_name, swaggered_classes)
     # Get all the nodes from all the classes.
-    root_node, api_node_map = InternalHelpers.parse_swaggered_classes(swaggered_classes)
-    api_node = api_node_map[api_path]
+    _, api_node_map = InternalHelpers.parse_swaggered_classes(swaggered_classes)
+    api_node = api_node_map[resource_name]
     if !api_node
       raise Swagger::Rails::NotFoundError.new(
-        "Not found: swagger_api_root with a :path key of '#{api_path}'")
+        "Not found: swagger_api_root named #{resource_name}")
     end
     api_node.as_json
   end
@@ -52,7 +41,6 @@ module Swagger::Rails
         api_node_map.merge!(swagger_nodes[:api_node_map])
       end
       root_node = self.get_resource_listing(root_nodes)
-
       [root_node, api_node_map]
     end
 
@@ -76,20 +64,22 @@ module Swagger::Rails
       @swagger_root_node ||= Swagger::Rails::ResourceListingNode.call(&block)
     end
 
-    def swagger_api_root(&block)
+    # Defines a Swagger "API Declaration".
+    # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#52-api-declaration
+    #
+    # @param resource_name [Symbol] An identifier for this API. All swagger_api_root declarations
+    #   with the same resource_name will be merged into a single API root node.
+    def swagger_api_root(resource_name, &block)
       # Map of path names to ApiDeclarationNodes.
       @swagger_api_root_node_map ||= {}
 
       # Grab a previously declared node if it exists, otherwise create a new ApiDeclarationNode.
-      # This merges all declarations of swagger_api_root with the same :path key.
-      temp_api_node = Swagger::Rails::ApiDeclarationNode.call(&block)
-      path = temp_api_node.data[:path]
-      raise Swagger::Rails::DeclarationError.new('swagger_api_root must contain a :path key') if !path
-      previous_api_node = @swagger_api_root_node_map[path]
-      api_node = previous_api_node ? previous_api_node : temp_api_node
+      # This merges all declarations of swagger_api_root with the same resource_name key.
+      api_node = @swagger_api_root_node_map[resource_name]
+      api_node = Swagger::Rails::ApiDeclarationNode.call(&block) if !api_node
 
-      # Add it into the path to node map (may harmlessly overwrite the same object).
-      @swagger_api_root_node_map[path] = api_node
+      # Add it into the resource_name to node map (may harmlessly overwrite the same object).
+      @swagger_api_root_node_map[resource_name] = api_node
     end
 
     def _swagger_nodes
@@ -276,6 +266,11 @@ module Swagger::Rails
     def response_message(&block)
       self.data[:responseMessages] ||= []
       self.data[:responseMessages] << Node.call(&block)
+    end
+
+    def authorization(name, &block)
+      self.data[:authorizations] ||= AuthorizationsNode.new
+      self.data[:authorizations].authorization(name, &block)
     end
   end
 
