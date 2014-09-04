@@ -2,8 +2,7 @@ require 'json'
 require 'swagger/rails'
 
 
-# Some test data copied from the swagger docs:
-#
+# Test data originally based on the Swagger UI example data:
 # https://github.com/wordnik/swagger-codegen/blob/master/src/test/resources/petstore-1.2/api-docs
 RESOURCE_LISTING_JSON = open(File.expand_path('../swagger_resource_listing.json', __FILE__)).read
 # https://github.com/wordnik/swagger-codegen/blob/master/src/test/resources/petstore-1.2/pet
@@ -122,6 +121,116 @@ class PetController
       end
     end
   end
+
+  swagger_api_root :pets do
+    api do
+      key :path, '/pet/{petId}'
+
+      operation do
+        key :method, 'PATCH'
+        key :summary, 'partial updates to a pet'
+        key :notes, ''
+        key :type, :array
+        key :nickname, :partialUpdate
+
+        # item do
+        #   key :'$ref', :Pet
+        # end
+
+        key :produces, [
+          'application/json',
+          'application/xml',
+        ]
+        key :consumes, [
+          'application/json',
+          'application/xml',
+        ]
+
+        authorization :oauth2 do
+          key :type, 'oauth2'
+          scope do
+            key :scope, 'test:anything'
+            key :description, 'anything'
+          end
+        end
+
+        parameter do
+          key :name, :petId
+          key :description, 'ID of pet that needs to be fetched'
+          key :required, true
+          key :type, :string
+          key :paramType, :path
+        end
+
+        parameter do
+          key :name, :body
+          key :description, 'Pet object that needs to be added to the store'
+          key :required, true
+          key :type, :Pet
+          key :paramType, :body
+        end
+
+        response_message do
+          key :code, 400
+          key :message, 'Invalid tag value'
+        end
+      end
+    end
+  end
+
+  swagger_api_root :pets do
+    api do
+      key :path, '/pet/findByStatus'
+
+      operation do
+        key :method, 'GET'
+        key :summary, 'Finds Pets by status'
+        key :notes, 'Multiple status values can be provided with comma seperated strings'
+        key :type, :array
+        key :nickname, :findPetsByStatus
+
+        # item do
+        #   key :'$ref', :Pet
+        # end
+
+        key :produces, [
+          'application/json',
+          'application/xml',
+        ]
+        key :consumes, [
+          'application/json',
+          'application/xml',
+        ]
+
+        authorization :oauth2 do
+          key :type, 'oauth2'
+          scope do
+            key :scope, 'test:anything'
+            key :description, 'anything'
+          end
+        end
+
+        parameter do
+          key :name, :status
+          key :description, 'Status values that need to be considered for filter'
+          key :defaultValue, 'available'
+          key :required, true
+          key :type, :string
+          key :paramType, :query
+          key :enum, [
+            'available',
+            'pending',
+            'sold',
+          ]
+        end
+
+        response_message do
+          key :code, 400
+          key :message, 'Invalid status value'
+        end
+      end
+    end
+  end
 end
 
 class StoreController
@@ -159,7 +268,9 @@ describe Swagger::Rails do
       data = JSON.parse(RESOURCE_LISTING_JSON)
       expect(actual['info']).to eq(data['info'])
       expect(actual['authorizations']).to eq(data['authorizations'])
-      expect(actual['apis']).to eq(data['apis'])
+      actual['apis'].each_with_index do |api_data, i|
+        expect(api_data).to eq(data['apis'][i])
+      end
       expect(actual).to eq(data)
     end
     it 'is idempotent' do
@@ -195,6 +306,13 @@ describe Swagger::Rails do
 
       # Multiple expectations for better test diff output.
       data = JSON.parse(API_DECLARATION_JSON)
+      expect(actual['apis'][0]).to be
+      expect(actual['apis'][0]['operations']).to be
+      expect(actual['apis'][0]['operations'][0]).to be
+      expect(actual['apis'][0]['operations'][1]).to be
+      expect(actual['apis'][0]['operations'][0]).to eq(data['apis'][0]['operations'][0])
+      expect(actual['apis'][0]['operations'][1]).to eq(data['apis'][0]['operations'][1])
+      expect(actual['apis'][0]['operations']).to eq(data['apis'][0]['operations'])
       expect(actual['apis']).to eq(data['apis'])
       expect(actual['models']).to eq(data['models'])
       expect(actual).to eq(data)

@@ -18,18 +18,15 @@ module Swagger::Rails
   end
 
   module_function def build_api_json(resource_name, swaggered_classes)
-    # Get all the nodes from all the classes.
     _, api_node_map = InternalHelpers.parse_swaggered_classes(swaggered_classes)
-    api_node = api_node_map[resource_name]
-    if !api_node
-      raise Swagger::Rails::NotFoundError.new(
-        "Not found: swagger_api_root named #{resource_name}")
-    end
+    api_node = api_node_map[resource_name.to_sym]
+    raise Swagger::Rails::NotFoundError.new(
+      "Not found: swagger_api_root named #{resource_name}") if !api_node
     api_node.as_json
   end
 
   module InternalHelpers
-    # Return [root_node, api_node_map] from swaggered_classes.
+    # Return [root_node, api_node_map] from all of the given swaggered_classes.
     def self.parse_swaggered_classes(swaggered_classes)
       root_nodes = []
       api_node_map = {}
@@ -70,13 +67,21 @@ module Swagger::Rails
     # @param resource_name [Symbol] An identifier for this API. All swagger_api_root declarations
     #   with the same resource_name will be merged into a single API root node.
     def swagger_api_root(resource_name, &block)
+      resource_name = resource_name.to_sym
+
       # Map of path names to ApiDeclarationNodes.
       @swagger_api_root_node_map ||= {}
 
       # Grab a previously declared node if it exists, otherwise create a new ApiDeclarationNode.
       # This merges all declarations of swagger_api_root with the same resource_name key.
       api_node = @swagger_api_root_node_map[resource_name]
-      api_node = Swagger::Rails::ApiDeclarationNode.call(&block) if !api_node
+      if api_node
+        # Merge this swagger_api_root declaration into the previous one by the same resource_name.
+        api_node.instance_eval(&block)
+      else
+        # First time we've seen this `swagger_api_root :resource_name`.
+        api_node = Swagger::Rails::ApiDeclarationNode.call(&block)
+      end
 
       # Add it into the resource_name to node map (may harmlessly overwrite the same object).
       @swagger_api_root_node_map[resource_name] = api_node
@@ -245,7 +250,26 @@ module Swagger::Rails
   class ApiDeclarationNode < Node
     def api(&block)
       self.data[:apis] ||= []
-      self.data[:apis] << ApiNode.call(&block)
+
+      # Important: to conform with the Swagger spec, merge with any previous API declarations
+      # that have the same :path key. This ensures that operations affecting the same resource
+      # are all in the same operations node.
+      #
+      # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#522-api-object
+      # - The API Object describes one or more operations on a single path. In the apis array,
+      #   there MUST be only one API Object per path.
+      temp_api_node = ApiNode.call(&block)
+      api_node = self.data[:apis].select do |api_node|
+        api_node.data[:path] == temp_api_node.data[:path]
+      end[0]  # Embrace Ruby wtfs.
+
+      if api_node
+        # Merge this block with the previous ApiNode by the same path key.
+        api_node.instance_eval(&block)
+      else
+        # First time we've seen an api block with the given path key.
+        self.data[:apis] << temp_api_node
+      end
     end
   end
 
