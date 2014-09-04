@@ -7,7 +7,7 @@ module Swagger::Rails
   class DeclarationError < Error; end
   class NotFoundError < Error; end
 
-  # Inject the swagger_root and swagger_api_root class methods.
+  # Inject the swagger_root, swagger_api_root, and swagger_model class methods.
   def self.included(base)
     base.extend(ClassMethods)
   end
@@ -33,7 +33,7 @@ module Swagger::Rails
       swaggered_classes.each do |swaggered_class|
         next if !swaggered_class.respond_to?(:_swagger_nodes, true)
         swagger_nodes = swaggered_class.send(:_swagger_nodes)
-        root_node = swagger_nodes[:resource_listing]
+        root_node = swagger_nodes[:resource_listing_node]
         root_nodes << root_node if root_node
         api_node_map.merge!(swagger_nodes[:api_node_map])
       end
@@ -57,12 +57,14 @@ module Swagger::Rails
   module ClassMethods
     private
 
+    # Defines a Swagger Resource Listing.
+    # http://goo.gl/PvwUXj#51-resource-listing
     def swagger_root(&block)
       @swagger_root_node ||= Swagger::Rails::ResourceListingNode.call(&block)
     end
 
-    # Defines a Swagger "API Declaration".
-    # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#52-api-declaration
+    # Defines a Swagger API Declaration.
+    # http://goo.gl/PvwUXj#52-api-declaration
     #
     # @param resource_name [Symbol] An identifier for this API. All swagger_api_root declarations
     #   with the same resource_name will be merged into a single API root node.
@@ -87,12 +89,21 @@ module Swagger::Rails
       @swagger_api_root_node_map[resource_name] = api_node
     end
 
+    # Defines a Swagger Model.
+    # http://goo.gl/PvwUXj#526-models-object
+    def swagger_model(name, &block)
+      @swagger_models_node ||= Swagger::Rails::ModelsNode.new
+      @swagger_models_node.model(name, &block)
+    end
+
     def _swagger_nodes
       @swagger_root_node ||= nil  # Avoid initialization warnings.
-      @api_node_map ||= {}
+      @swagger_api_root_node_map ||= {}
+      @swagger_models ||= []
       {
-        resource_listing: @swagger_root_node,
+        resource_listing_node: @swagger_root_node,
         api_node_map: @swagger_api_root_node_map,
+        models_node: @swagger_models_node,
       }
     end
   end
@@ -141,7 +152,7 @@ module Swagger::Rails
   # Nodes for the Resource Listing.
   # -----
 
-  # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#51-resource-listing
+  # http://goo.gl/PvwUXj#51-resource-listing
   class ResourceListingNode < Node
     def initialize(*args)
       # An internal list of the user-defined names that uniquely identify each API tree.
@@ -169,19 +180,19 @@ module Swagger::Rails
     end
   end
 
-  # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#512-resource-object
+  # http://goo.gl/PvwUXj#512-resource-object
   class ResourceNode < Node; end
 
-  # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#514-authorizations-object
   # NOTE: in the spec this is different than API Declaration authorizations.
+  # http://goo.gl/PvwUXj#514-authorizations-object
   class ResourceListingAuthorizationsNode < Node
     def authorization(name, &block)
       self.data[name] = ResourceListingAuthorizationNode.call(&block)
     end
   end
 
-  # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#515-authorization-object
   # NOTE: in the spec this is different than API Declaration authorization.
+  # http://goo.gl/PvwUXj#515-authorization-object
   class ResourceListingAuthorizationNode < Node
     GRANT_TYPES = [:implicit, :authorization_code].freeze
 
@@ -198,13 +209,13 @@ module Swagger::Rails
     end
   end
 
-  # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#513-info-object
+  # http://goo.gl/PvwUXj#513-info-object
   class InfoNode < Node; end
 
-  # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#516-scope-object
+  # http://goo.gl/PvwUXj#516-scope-object
   class ScopeNode < Node; end
 
-  # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#517-grant-types-object
+  # http://goo.gl/PvwUXj#517-grant-types-object
   class GrantTypesNode < Node
     def implicit(&block)
       self.data[:implicit] = ImplicitNode.call(&block)
@@ -215,17 +226,17 @@ module Swagger::Rails
     end
   end
 
-  # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#518-implicit-object
+  # http://goo.gl/PvwUXj#518-implicit-object
   class ImplicitNode < Node
     def login_endpoint(&block)
       self.data[:loginEndpoint] = LoginEndpointNode.call(&block)
     end
   end
 
-  # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#5110-login-endpoint-object
+  # http://goo.gl/PvwUXj#5110-login-endpoint-object
   class LoginEndpointNode < Node; end
 
-  # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#519-authorization-code-object
+  # http://goo.gl/PvwUXj#519-authorization-code-object
   class AuthorizationCodeNode < Node
     def token_request_endpoint(&block)
       self.data[:tokenRequestEndpoint] = TokenRequestEndpointNode.call(&block)
@@ -236,17 +247,17 @@ module Swagger::Rails
     end
   end
 
-  # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#5111-token-request-endpoint-object
+  # http://goo.gl/PvwUXj#5111-token-request-endpoint-object
   class TokenRequestEndpointNode < Node; end
 
-  # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#5112-token-endpoint-object
+  # http://goo.gl/PvwUXj#5112-token-endpoint-object
   class TokenEndpointNode < Node; end
 
   # -----
   # Nodes for API Declarations.
   # -----
 
-  # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#52-api-declaration
+  # http://goo.gl/PvwUXj#52-api-declaration
   class ApiDeclarationNode < Node
     def api(&block)
       self.data[:apis] ||= []
@@ -255,7 +266,7 @@ module Swagger::Rails
       # that have the same :path key. This ensures that operations affecting the same resource
       # are all in the same operations node.
       #
-      # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#522-api-object
+      # http://goo.gl/PvwUXj#522-api-object
       # - The API Object describes one or more operations on a single path. In the apis array,
       #   there MUST be only one API Object per path.
       temp_api_node = ApiNode.call(&block)
@@ -273,7 +284,7 @@ module Swagger::Rails
     end
   end
 
-  # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#522-api-object
+  # http://goo.gl/PvwUXj#522-api-object
   class ApiNode < Node
     def operation(&block)
       self.data[:operations] ||= []
@@ -302,16 +313,16 @@ module Swagger::Rails
     end
   end
 
-  # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#514-authorizations-object
   # NOTE: in the spec this is different than Resource Listing's authorizations.
+  # http://goo.gl/PvwUXj#514-authorizations-object
   class ApiAuthorizationsNode < Node
     def authorization(name, &block)
       self.data[name] ||= ApiAuthorizationNode.call(&block)
     end
   end
 
-  # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#515-authorization-object
   # NOTE: in the spec this is different than Resource Listing's authorization.
+  # http://goo.gl/PvwUXj#515-authorization-object
   class ApiAuthorizationNode < Node
     def as_json
       # Special case: the API Authorization object is weirdly the only array of hashes.
@@ -326,13 +337,46 @@ module Swagger::Rails
     end
   end
 
-  # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#5211-scope-object
   # NOTE: in the spec this is different than Resource Listing's scope object.
+  # http://goo.gl/PvwUXj#5211-scope-object
   class ApiAuthorizationScopeNode < Node; end
 
-  # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#434-items-object
+  # http://goo.gl/PvwUXj#434-items-object
   class ItemsNode < Node; end
 
-  # https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#524-parameter-object
+  # http://goo.gl/PvwUXj#524-parameter-object
   class ParameterNode < Node; end
+
+  # -----
+  # Nodes for Models.
+  # -----
+
+  # http://goo.gl/PvwUXj#526-models-object
+  class ModelsNode < Node
+    def model(name, &block)
+      self.data[name] ||= ModelNode.call(&block)
+    end
+  end
+
+  # http://goo.gl/PvwUXj#527-model-object
+  class ModelNode < Node
+    def property(name, &block)
+      self.data[:properties] ||= PropertiesNode.new
+      self.data[:properties].property(name, &block)
+    end
+  end
+
+  # http://goo.gl/PvwUXj#527-model-object
+  class PropertiesNode < Node
+    def property(name, &block)
+      self.data[name] = PropertyNode.call(&block)
+    end
+  end
+
+  # http://goo.gl/PvwUXj#527-model-object
+  class PropertyNode < Node
+    def items(&block)
+      self.data[:items] = ItemsNode.call(&block)
+    end
+  end
 end

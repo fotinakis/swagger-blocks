@@ -215,6 +215,7 @@ class PetController
   end
 end
 
+
 class StoreController
   include Swagger::Rails
 
@@ -222,6 +223,7 @@ class StoreController
     key :path, '/store'
   end
 end
+
 
 class UserController
   include Swagger::Rails
@@ -231,8 +233,86 @@ class UserController
   end
 end
 
-class BlankController
+
+class TagModel
+  include Swagger::Rails
+
+  swagger_model :Tag do
+    key :id, :Tag
+
+    property :id do
+      key :type, :integer
+      key :format, :int64
+    end
+
+    property :name do
+      key :type, :string
+    end
+  end
 end
+
+
+class OtherModelsContainer
+  include Swagger::Rails
+
+  swagger_model :Pet do
+    key :id, :Pet
+    key :required, [:id, :name]
+
+    property :id do
+      key :type, :integer
+      key :format, :int64
+      key :description, 'unique identifier for the pet'
+      key :minimum, '0.0'
+      key :maximum, '100.0'
+    end
+
+    property :category do
+      key :'$ref', :Category
+    end
+
+    property :name do
+      key :type, :string
+    end
+
+    property :photoUrls do
+      key :type, :array
+      items do
+        key :type, :string
+      end
+    end
+
+    property :tags do
+      key :type, :array
+      items do
+        key :'$ref', :Tag
+      end
+    end
+
+    property :status do
+      key :type, :string
+      key :description, 'pet status in the store'
+      key :enum, [:available, :pending, :sold]
+    end
+  end
+
+  swagger_model :Category do
+    key :id, :Pet
+    key :required, [:id, :name]
+
+    property :id do
+      key :type, :integer
+      key :format, :int64
+    end
+
+    property :name do
+      key :type, :string
+    end
+  end
+end
+
+
+class BlankController; end
 
 
 describe Swagger::Rails do
@@ -242,11 +322,13 @@ describe Swagger::Rails do
         PetController,
         UserController,
         StoreController,
+        TagModel,
+        OtherModelsContainer,
       ]
       actual = Swagger::Rails.build_root_json(swaggered_classes)
-      actual = JSON.parse(actual.to_json)  # For access consistency.
 
       # Multiple expectations for better test diff output.
+      actual = JSON.parse(actual.to_json)  # For access consistency.
       data = JSON.parse(RESOURCE_LISTING_JSON)
       expect(actual['info']).to eq(data['info'])
       expect(actual['authorizations']).to eq(data['authorizations'])
@@ -282,11 +364,13 @@ describe Swagger::Rails do
         PetController,
         UserController,
         StoreController,
+        TagModel,
+        OtherModelsContainer,
       ]
       actual = Swagger::Rails.build_api_json(:pets, swaggered_classes)
-      actual = JSON.parse(actual.to_json)  # For access consistency.
 
       # Multiple expectations for better test diff output.
+      actual = JSON.parse(actual.to_json)  # For access consistency.
       data = JSON.parse(API_DECLARATION_JSON)
       expect(actual['apis'][0]).to be
       expect(actual['apis'][0]['operations']).to be
