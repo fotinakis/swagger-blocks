@@ -13,7 +13,6 @@ class PetController
   swagger_root do
     key :swaggerVersion, '1.2'
     key :apiVersion, '1.0.0'
-
     info do
       key :title, 'Swagger Sample App'
       key :description, "This is a sample server Petstore server.  You can find out more about Swagger \n    at <a href=\"http://swagger.wordnik.com\">http://swagger.wordnik.com</a> or on irc.freenode.net, #swagger.  For this sample,\n    you can use the api key \"special-key\" to test the authorization filters"
@@ -22,49 +21,40 @@ class PetController
       key :license, 'Apache 2.0'
       key :licenseUrl, 'http://www.apache.org/licenses/LICENSE-2.0.html'
     end
-
     api do
       key :path, '/pet'
       key :description, 'Operations about pets'
     end
-
     api do
       key :path, '/user'
       key :description, 'Operations about user'
     end
-
     api do
       key :path, '/store'
       key :description, 'Operations about store'
     end
-
     authorization :oauth2 do
       key :type, 'oauth2'
-
       scope do
         key :scope, 'email'
         key :description, 'Access to your email address'
       end
-
       scope do
         key :scope, 'pets'
         key :description, 'Access to your pets'
       end
-
       grant_type :implicit do
         login_endpoint do
           key :url, 'http://petstore.swagger.wordnik.com/oauth/dialog'
         end
         key :tokenName, 'access_token'
       end
-
       grant_type :authorization_code do
         token_request_endpoint do
           key :url, 'http://petstore.swagger.wordnik.com/oauth/requestToken'
           key :clientIdName, 'client_id'
           key :clientSecretName, 'client_secret'
         end
-
         token_endpoint do
           key :url, 'http://petstore.swagger.wordnik.com/oauth/token'
           key :tokenName, 'access_code'
@@ -73,46 +63,40 @@ class PetController
     end
   end
 
-  # All swagger_api_root declarations with the same "path" key will be merged.
+  # All swagger_api_root declarations with the same key will be merged.
   swagger_api_root :pets do
     key :swaggerVersion, '1.2'
     key :apiVersion, '1.0.0'
     key :basePath, 'http://petstore.swagger.wordnik.com/api'
     key :resourcePath, '/pet'
-
     key :produces, [
       'application/json',
       'application/xml',
       'text/plain',
       'text/html',
     ]
-
     api do
       key :path, '/pet/{petId}'
-
       operation do
         key :method, 'GET'
         key :summary, 'Find pet by ID'
         key :notes, 'Returns a pet based on ID'
         key :type, :Pet
         key :nickname, :getPetById
-
         parameter do
+          key :paramType, :path
           key :name, :petId
           key :description, 'ID of pet that needs to be fetched'
           key :required, true
           key :type, :integer
           key :format, :int64
-          key :paramType, :path
           key :minimum, '1.0'
           key :maximum, '100000.0'
         end
-
         response_message do
           key :code, 400
           key :message, 'Invalid ID supplied'
         end
-
         response_message do
           key :code, 404
           key :message, 'Pet not found'
@@ -124,18 +108,15 @@ class PetController
   swagger_api_root :pets do
     api do
       key :path, '/pet/{petId}'
-
       operation do
         key :method, 'PATCH'
         key :summary, 'partial updates to a pet'
         key :notes, ''
         key :type, :array
         key :nickname, :partialUpdate
-
         items do
           key :'$ref', :Pet
         end
-
         key :produces, [
           'application/json',
           'application/xml',
@@ -144,30 +125,26 @@ class PetController
           'application/json',
           'application/xml',
         ]
-
         authorization :oauth2 do
           scope do
             key :scope, 'test:anything'
             key :description, 'anything'
           end
         end
-
         parameter do
+          key :paramType, :path
           key :name, :petId
           key :description, 'ID of pet that needs to be fetched'
           key :required, true
           key :type, :string
-          key :paramType, :path
         end
-
         parameter do
+          key :paramType, :body
           key :name, :body
           key :description, 'Pet object that needs to be added to the store'
           key :required, true
           key :type, :Pet
-          key :paramType, :body
         end
-
         response_message do
           key :code, 400
           key :message, 'Invalid tag value'
@@ -179,32 +156,28 @@ class PetController
   swagger_api_root :pets do
     api do
       key :path, '/pet/findByStatus'
-
       operation do
         key :method, 'GET'
         key :summary, 'Finds Pets by status'
         key :notes, 'Multiple status values can be provided with comma seperated strings'
         key :type, :array
         key :nickname, :findPetsByStatus
-
         items do
           key :'$ref', :Pet
         end
-
         parameter do
+          key :paramType, :query
           key :name, :status
           key :description, 'Status values that need to be considered for filter'
           key :defaultValue, 'available'
           key :required, true
           key :type, :string
-          key :paramType, :query
           key :enum, [
             'available',
             'pending',
             'sold',
           ]
         end
-
         response_message do
           key :code, 400
           key :message, 'Invalid status value'
@@ -238,12 +211,10 @@ class TagModel
 
   swagger_model :Tag do
     key :id, :Tag
-
     property :id do
       key :type, :integer
       key :format, :int64
     end
-
     property :name do
       key :type, :string
     end
@@ -257,7 +228,6 @@ class OtherModelsContainer
   swagger_model :Pet do
     key :id, :Pet
     key :required, [:id, :name]
-
     property :id do
       key :type, :integer
       key :format, :int64
@@ -265,29 +235,24 @@ class OtherModelsContainer
       key :minimum, '0.0'
       key :maximum, '100.0'
     end
-
     property :category do
       key :'$ref', :Category
     end
-
     property :name do
       key :type, :string
     end
-
     property :photoUrls do
       key :type, :array
       items do
         key :type, :string
       end
     end
-
     property :tags do
       key :type, :array
       items do
         key :'$ref', :Tag
       end
     end
-
     property :status do
       key :type, :string
       key :description, 'pet status in the store'
@@ -297,12 +262,10 @@ class OtherModelsContainer
 
   swagger_model :Category do
     key :id, :Category
-
     property :id do
       key :type, :integer
       key :format, :int64
     end
-
     property :name do
       key :type, :string
     end
