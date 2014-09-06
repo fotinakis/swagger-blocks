@@ -1,11 +1,11 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'swagger_blocks/version'
+require 'swagger/blocks/version'
 
 Gem::Specification.new do |spec|
   spec.name          = 'swagger-blocks'
-  spec.version       = SwaggerBlocks::VERSION
+  spec.version       = Swagger::Blocks::VERSION
   spec.authors       = ['Mike Fotinakis']
   spec.email         = ['mike@fotinakis.com']
   spec.summary       = %q{Define and generate Swagger JSON files in Ruby.}

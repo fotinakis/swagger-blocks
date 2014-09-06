@@ -1,4 +1,4 @@
-# SwaggerBlocks
+# Swagger::Blocks
 
 TODO: Write a gem description
 
