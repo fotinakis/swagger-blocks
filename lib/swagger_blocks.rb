@@ -1,7 +1,7 @@
 require 'json'
-require_relative './version'
+require 'swagger_blocks/version'
 
-module Swagger::Ruby
+module SwaggerBlocks
   # Some custom error classes.
   class Error < Exception; end
   class DeclarationError < Error; end
@@ -20,11 +20,11 @@ module Swagger::Ruby
   module_function def build_api_json(resource_name, swaggered_classes)
     data = InternalHelpers.parse_swaggered_classes(swaggered_classes)
     api_node = data[:api_node_map][resource_name.to_sym]
-    raise Swagger::Ruby::NotFoundError.new(
+    raise SwaggerBlocks::NotFoundError.new(
       "Not found: swagger_api_root named #{resource_name}") if !api_node
 
     # Aggregate all model definitions into a new ModelsNode tree and add it to the JSON.
-    temp_models_node = Swagger::Ruby::ModelsNode.call(name: 'models') { }
+    temp_models_node = SwaggerBlocks::ModelsNode.call(name: 'models') { }
     data[:models_nodes].each do |models_node|
       temp_models_node.merge!(models_node)
     end
@@ -59,10 +59,10 @@ module Swagger::Ruby
     # Make sure there is exactly one root_node and return it.
     def self.get_resource_listing(root_nodes)
       if root_nodes.length == 0
-        raise Swagger::Ruby::DeclarationError.new(
+        raise SwaggerBlocks::DeclarationError.new(
           'swagger_root must be declared')
       elsif root_nodes.length > 1
-        raise Swagger::Ruby::DeclarationError.new(
+        raise SwaggerBlocks::DeclarationError.new(
           'Only one swagger_root declaration is allowed.')
       end
       root_nodes.first
@@ -75,7 +75,7 @@ module Swagger::Ruby
     # Defines a Swagger Resource Listing.
     # http://goo.gl/PvwUXj#51-resource-listing
     def swagger_root(&block)
-      @swagger_root_node ||= Swagger::Ruby::ResourceListingNode.call(&block)
+      @swagger_root_node ||= SwaggerBlocks::ResourceListingNode.call(&block)
     end
 
     # Defines a Swagger API Declaration.
@@ -97,7 +97,7 @@ module Swagger::Ruby
         api_node.instance_eval(&block)
       else
         # First time we've seen this `swagger_api_root :resource_name`.
-        api_node = Swagger::Ruby::ApiDeclarationNode.call(&block)
+        api_node = SwaggerBlocks::ApiDeclarationNode.call(&block)
       end
 
       # Add it into the resource_name to node map (may harmlessly overwrite the same object).
@@ -107,7 +107,7 @@ module Swagger::Ruby
     # Defines a Swagger Model.
     # http://goo.gl/PvwUXj#526-models-object
     def swagger_model(name, &block)
-      @swagger_models_node ||= Swagger::Ruby::ModelsNode.new
+      @swagger_models_node ||= SwaggerBlocks::ModelsNode.new
       @swagger_models_node.model(name, &block)
     end
 
