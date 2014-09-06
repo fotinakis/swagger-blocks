@@ -1,5 +1,7 @@
 # Swagger::Blocks
 
+[![Build Status](https://travis-ci.org/fotinakis/swagger-blocks.svg?branch=master)](https://travis-ci.org/fotinakis/swagger-blocks)
+
 TODO: Write a gem description
 
 ## Installation
