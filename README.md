@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/fotinakis/swagger-blocks.svg?branch=master)](https://travis-ci.org/fotinakis/swagger-blocks)
 
+(docs in progress)
+
 Swagger::Blocks helps you write API docs in the [Swagger](https://helloreverb.com/developers/swagger) style for your Rails/Sinatra app, and then builds JSON compatible with [Swagger UI](http://petstore.swagger.wordnik.com/#!/pet).
 
 ## Features
@@ -89,9 +91,14 @@ class Pet < ActiveRecord::Base
 
 #### Docs controller
 
-```Ruby
+We need a main controller that serves the JSON from the above defined Swagger blocks.
 
-class PetsController < ActionController::Base
+```Ruby
+resources :apidocs, only: [:index, :show]
+```
+
+```Ruby
+class ApidocsController < ActionController::Base
   swagger_root do
     key :swaggerVersion, '1.2'
     key :apiVersion, '1.0.0'
@@ -103,9 +110,35 @@ class PetsController < ActionController::Base
       key :description, 'Operations about pets'
     end
   end
+  
+  SWAGGERED_CLASSES = [
+    PetsController,
+    Pets,
+    self,
+  ].freeze
+  
+  def index
+    render json: Swagger::Blocks.build_root_json(SWAGGERED_CLASSES)
+  end
+
+  def show
+    render json: Swagger::Blocks.build_api_json(params[:id], SWAGGERED_CLASSES)
+  end
 end
 
 ```
+
+The special part of this controller are these lines:
+
+```Ruby
+render json: Swagger::Blocks.build_root_json(SWAGGERED_CLASSES)
+```
+
+```Ruby
+render json: Swagger::Blocks.build_api_json(params[:id], SWAGGERED_CLASSES)
+```
+
+Those are the only lines necessary to build the root Swagger [Resource Listing](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#51-resource-listing) JSON and the JSON for each Swagger [API Declaration](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#52-api-declaration).
 
 ## Reference
 
