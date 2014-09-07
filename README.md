@@ -2,16 +2,16 @@
 
 [![Build Status](https://travis-ci.org/fotinakis/swagger-blocks.svg?branch=master)](https://travis-ci.org/fotinakis/swagger-blocks)
 
-(docs in progress)
+Swagger::Blocks helps you write API docs in the [Swagger](https://helloreverb.com/developers/swagger) style for your Rails/Sinatra app, and then builds JSON that is compatible with [Swagger UI](http://petstore.swagger.wordnik.com/#!/pet).
 
-Swagger::Blocks helps you write API docs in the [Swagger](https://helloreverb.com/developers/swagger) style for your Rails/Sinatra app, and then builds JSON compatible with [Swagger UI](http://petstore.swagger.wordnik.com/#!/pet).
+*Brand new gem!* Please file any bugs and issues you may come across.
 
 ## Features
 
 * Supports **live updating** by design. Change code, refresh your API docs.
 * **Works with all Ruby web frameworks** including Rails, Sinatra, etc.
 * **100% support** for all features of the [Swagger 1.2 spec](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md).
-* Flexible, you include swagger blocks 
+* Flexible, you can use Swagger::Blocks in any object and split definitions up how you prefer.
 
 ## Installation
 
@@ -23,7 +23,7 @@ Or install directly with `gem install swagger-blocks`. Requires Ruby 2.1+
 
 ## Example (Rails)
 
-Simplified example based on the design for the Petstore [Swagger Sample App](http://petstore.swagger.wordnik.com/#!/pet):
+Simplified example based on the design for the Petstore [Swagger Sample App](http://petstore.swagger.wordnik.com/#!/pet). For a more complex and complete example, see the [swagger_blocks_spec.rb](https://github.com/fotinakis/swagger-blocks/blob/master/spec/lib/swagger_blocks_spec.rb) file.
 
 #### PetsController
 
@@ -62,6 +62,8 @@ class PetsController < ActionController::Base
       end
     end
   end
+  
+  # ...
 end
 ```
 
@@ -81,12 +83,24 @@ class Pet < ActiveRecord::Base
       key :minimum, '0.0'
       key :maximum, '100.0'
     end
+    property :name do
+      key :type, :string
+    end
+    property :photoUrls do
+      key :type, :array
+      items do
+        key :type, :string
+      end
+    end
     property :status do
       key :type, :string
       key :description, 'pet status in the store'
       key :enum, [:available, :pending, :sold]
     end
   end
+  
+  # ...
+end
 ```
 
 #### Docs controller
@@ -111,6 +125,7 @@ class ApidocsController < ActionController::Base
     end
   end
   
+  # A list of all classes that have swagger_* declarations.
   SWAGGERED_CLASSES = [
     PetsController,
     Pets,
@@ -138,11 +153,11 @@ render json: Swagger::Blocks.build_root_json(SWAGGERED_CLASSES)
 render json: Swagger::Blocks.build_api_json(params[:id], SWAGGERED_CLASSES)
 ```
 
-Those are the only lines necessary to build the root Swagger [Resource Listing](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#51-resource-listing) JSON and the JSON for each Swagger [API Declaration](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#52-api-declaration).
+Those are the only lines necessary to build the root Swagger [Resource Listing](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#51-resource-listing) JSON and the JSON for each Swagger [API Declaration](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#52-api-declaration). You simply pass in a list of all the "swaggered" classes in your app.
 
 ## Reference
 
-https://github.com/fotinakis/swagger-blocks/blob/master/spec/lib/swagger_blocks_spec.rb
+See the [swagger_blocks_spec.rb](https://github.com/fotinakis/swagger-blocks/blob/master/spec/lib/swagger_blocks_spec.rb) for examples of more complex features and declarations possible.
 
 ## Contributing
 
