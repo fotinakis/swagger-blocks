@@ -30,7 +30,7 @@ Also note that Rails is not required, you can use Swagger::Blocks with any Ruby 
 
 #### PetsController
 
-Naming below matches the [Swagger 1.2 spec](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md).
+Parameters and features below are defined by the [Swagger 1.2 spec](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md).
 
 ```Ruby
 class PetsController < ActionController::Base
