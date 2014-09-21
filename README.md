@@ -20,7 +20,7 @@ Add this line to your application's Gemfile:
 
     gem 'swagger-blocks'
     
-Or install directly with `gem install swagger-blocks`. Requires Ruby 2.1+
+Or install directly with `gem install swagger-blocks`. **Requires Ruby 2.1+**
 
 ## Example (Rails)
 
