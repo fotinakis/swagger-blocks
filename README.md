@@ -4,8 +4,6 @@
 
 Swagger::Blocks helps you write API docs in the [Swagger](https://helloreverb.com/developers/swagger) style in Ruby and then automatically build JSON that is compatible with [Swagger UI](http://petstore.swagger.wordnik.com/#!/pet). It is a DSL for pure Ruby code blocks that can be turned into JSON.
 
-*This is a brand new gem! Please file any bugs and issues you may come across.*
-
 ## Features
 
 * Supports **live updating** by design. Change code, refresh your API docs.
