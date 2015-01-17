@@ -118,6 +118,8 @@ resources :apidocs, only: [:index, :show]
 
 ```Ruby
 class ApidocsController < ActionController::Base
+  include Swagger::Blocks
+
   swagger_root do
     key :swaggerVersion, '1.2'
     key :apiVersion, '1.0.0'
