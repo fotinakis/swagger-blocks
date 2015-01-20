@@ -15,6 +15,11 @@ It helps you write API docs in the [Swagger](https://helloreverb.com/developers/
 * Flexible—you can use Swagger::Blocks anywhere, split up blocks to fit your style preferences, etc. Since it's pure Ruby and serves definitions dynamically, you can easily use initializers/config objects to change values or even show/hide different APIs based on environment.
 * 1:1 naming with the Swagger spec—block names and nesting should match almost exactly with the swagger spec, with rare exceptions to make things more convenient.
 
+## Swagger UI demo
+
+http://petstore.swagger.wordnik.com/#!/pet
+![[Swagger UI](http://petstore.swagger.wordnik.com/#!/pet)](https://cloud.githubusercontent.com/assets/75300/5822830/4769805c-a08c-11e4-9efe-d57cf0f752e0.png)
+
 ## Installation
 
 Add this line to your application's Gemfile:
