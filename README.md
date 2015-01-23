@@ -27,7 +27,7 @@ Add this line to your application's Gemfile:
 
     gem 'swagger-blocks'
     
-Or install directly with `gem install swagger-blocks`. **Requires Ruby 2.1+**
+Or install directly with `gem install swagger-blocks`.
 
 ## Example (Rails)
 
@@ -182,6 +182,11 @@ See the [swagger_blocks_spec.rb](https://github.com/fotinakis/swagger-blocks/blo
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
+
+## Release notes
+
+* v1.0.1: Make backwards-compatible with Ruby 1.9.3.
+* v1.0.0: Initial major release.
 
 ## Credits
 
