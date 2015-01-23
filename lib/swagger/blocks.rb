@@ -13,12 +13,12 @@ module Swagger
       base.extend(ClassMethods)
     end
 
-    module_function def build_root_json(swaggered_classes)
+    def self.build_root_json(swaggered_classes)
       data = Swagger::Blocks::InternalHelpers.parse_swaggered_classes(swaggered_classes)
       data[:root_node].as_json
     end
 
-    module_function def build_api_json(resource_name, swaggered_classes)
+    def self.build_api_json(resource_name, swaggered_classes)
       data = Swagger::Blocks::InternalHelpers.parse_swaggered_classes(swaggered_classes)
       api_node = data[:api_node_map][resource_name.to_sym]
       raise Swagger::Blocks::NotFoundError.new(
@@ -26,9 +26,7 @@ module Swagger
 
       # Aggregate all model definitions into a new ModelsNode tree and add it to the JSON.
       temp_models_node = Swagger::Blocks::ModelsNode.call(name: 'models') { }
-      data[:models_nodes].each do |models_node|
-        temp_models_node.merge!(models_node)
-      end
+      data[:models_nodes].each { |models_node| temp_models_node.merge!(models_node) }
       result = api_node.as_json
       result.merge!(temp_models_node.as_json) if temp_models_node
       result
@@ -130,10 +128,10 @@ module Swagger
     class Node
       attr_accessor :name
 
-      def self.call(name: nil, &block)
+      def self.call(options = {}, &block)
         # Create a new instance and evaluate the block into it.
         instance = new
-        instance.name = name if name # Set the first parameter given as the name.
+        instance.name = options[:name] if options[:name]
         instance.instance_eval(&block)
         instance
       end
