@@ -16,8 +16,15 @@ module Swagger
     def self.build_json(swaggered_classes)
       data = Swagger::BlocksV2::InternalHelpers.
         parse_swaggered_classes(swaggered_classes)
-      data[:root].key(:paths, data[:paths]) unless data[:paths].empty?
-      data[:root].key(:definitions, data[:definitions]) unless data[:definitions].empty?
+      [:paths, :definitions].each do |resource_type|
+        unless data[resource_type].empty?
+          result = data[resource_type].inject({}) do |memo, (name, node)|
+            memo[name] = node.as_json
+            memo
+          end
+          data[:root].key(resource_type, result)
+        end
+      end
       data[:root].as_json
     end
 
@@ -73,24 +80,33 @@ module Swagger
       def swagger_path(path, &block)
         path = path.to_sym
 
-        @swagger_paths_node_map ||= {}
+        @swagger_path_node_map ||= {}
 
-        path_node = @swagger_paths_node_map[path]
+        path_node = @swagger_path_node_map[path]
         if path_node
           # Merge this path declaration into the previous one
           path_node.instance_eval(&block)
         else
           # First time we've seen this path
-          Swagger::BlocksV2::PathNode.call(&block)
-          @swagger_paths_node_map[path] = path_node
+          @swagger_path_node_map[path] =
+            Swagger::BlocksV2::PathNode.call(&block)
         end
       end
 
       # Defines a Swagger Model.
       # http://goo.gl/PvwUXj#526-models-object
       def swagger_definition(name, &block)
-        @swagger_definitions_node ||= Swagger::BlocksV2::DefinitionsNode.new
-        @swagger_definitions_node.definition(name, &block)
+        @swagger_definition_node_map ||= {}
+
+        definition_node = @swagger_definition_node_map[name]
+        if definition_node
+          # Merge this definition_node declaration into the previous one
+          definition_node.instance_eval(&block)
+        else
+          # First time we've seen this definition_node
+          @swagger_definition_node_map[name] =
+            Swagger::BlocksV2::DefinitionNode.call(&block)
+        end
       end
 
       def _swagger_nodes

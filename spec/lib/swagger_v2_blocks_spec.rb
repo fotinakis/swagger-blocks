@@ -31,11 +31,30 @@ class PetControllerV2
     # paths do
 
     # end
-    # definitions do
-
-    # end
   end
 
+end
+
+class Pet
+  include Swagger::BlocksV2
+
+  swagger_definition(:pet) do
+    key :required, [:id, :name]
+    property :id do
+      key :type, :integer
+      key :format, :int64
+    end
+    property :name do
+      key :type, :string
+    end
+    property :tag do
+      key :type, :string
+    end
+  end
+
+  # swagger_definition(:petInput) do
+  #   key :allOf
+  # end
 end
 
 describe Swagger::BlocksV2 do
@@ -43,6 +62,7 @@ describe Swagger::BlocksV2 do
     it 'outputs the correct data' do
       swaggered_classes = [
         PetControllerV2,
+        Pet
       ]
       actual = Swagger::BlocksV2.build_json(swaggered_classes)
 
@@ -58,7 +78,7 @@ describe Swagger::BlocksV2 do
       expect(actual).to eq(data)
     end
     it 'is idempotent' do
-      swaggered_classes = [PetControllerV2]
+      swaggered_classes = [PetControllerV2, Pet]
       actual = JSON.parse(Swagger::BlocksV2.build_json(swaggered_classes).to_json)
       actual = JSON.parse(Swagger::BlocksV2.build_json(swaggered_classes).to_json)
       data = JSON.parse(RESOURCE_LISTING_JSON_V2)
