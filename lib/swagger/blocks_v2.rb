@@ -16,10 +16,9 @@ module Swagger
     def self.build_json(swaggered_classes)
       data = Swagger::BlocksV2::InternalHelpers.
         parse_swaggered_classes(swaggered_classes)
-      [:paths, :definitions].each do |resource_type|
-        unless data[resource_type].empty?
-          data[:root].key(resource_type, data[resource_type])
-        end
+      data[:root].key(:paths, data[:paths]) # required, so no empty? check
+      unless data[:definitions].empty?
+        data[:root].key(:definitions, data[:definitions])
       end
       data[:root].as_json
     end
@@ -75,6 +74,9 @@ module Swagger
       #   with the same resource_name will be merged into a single API root node.
       def swagger_path(path, &block)
         path = path.to_sym
+
+        # TODO enforce that path name begins with a '/'
+        #   (or x- , but need to research Vendor Extensions first)
 
         @swagger_path_node_map ||= {}
 
@@ -169,43 +171,8 @@ module Swagger
       def info(&block)
         self.data[:info] = InfoNode.call(&block)
       end
-
-      # def authorization(name, &block)
-      #   self.data[:authorizations] ||= Swagger::BlocksV2::ResourceListingAuthorizationsNode.new
-      #   self.data[:authorizations].authorization(name, &block)
-      # end
     end
 
-    # # http://goo.gl/PvwUXj#512-resource-object
-    # class ResourceNode < Node; end
-
-    # # NOTE: in the spec this is different than API Declaration authorizations.
-    # # http://goo.gl/PvwUXj#514-authorizations-object
-    # class ResourceListingAuthorizationsNode < Node
-    #   def authorization(name, &block)
-    #     self.data[name] = Swagger::BlocksV2::ResourceListingAuthorizationNode.call(&block)
-    #   end
-    # end
-
-    # # NOTE: in the spec this is different than API Declaration authorization.
-    # # http://goo.gl/PvwUXj#515-authorization-object
-    # class ResourceListingAuthorizationNode < Node
-    #   GRANT_TYPES = [:implicit, :authorization_code].freeze
-
-    #   def scope(&block)
-    #     self.data[:scopes] ||= []
-    #     self.data[:scopes] << Swagger::BlocksV2::ScopeNode.call(&block)
-    #   end
-
-    #   def grant_type(name, &block)
-    #     raise ArgumentError.new("#{name} not in #{GRANT_TYPES}") if !GRANT_TYPES.include?(name)
-    #     self.data[:grantTypes] ||= Swagger::BlocksV2::GrantTypesNode.new
-    #     self.data[:grantTypes].implicit(&block) if name == :implicit
-    #     self.data[:grantTypes].authorization_code(&block) if name == :authorization_code
-    #   end
-    # end
-
-    # http://goo.gl/PvwUXj#513-info-object
     class InfoNode < Node
       def contact(&block)
         self.data[:contact] = ContactNode.call(&block)
@@ -216,56 +183,9 @@ module Swagger
       end
     end
 
-    # https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#contact-object-
     class ContactNode < Node; end
 
-    # https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#license-object-
     class LicenseNode < Node; end
-
-    # # http://goo.gl/PvwUXj#516-scope-object
-    # class ScopeNode < Node; end
-
-    # # http://goo.gl/PvwUXj#517-grant-types-object
-    # class GrantTypesNode < Node
-    #   def implicit(&block)
-    #     self.data[:implicit] = Swagger::BlocksV2::ImplicitNode.call(&block)
-    #   end
-
-    #   def authorization_code(&block)
-    #     self.data[:authorization_code] = Swagger::BlocksV2::AuthorizationCodeNode.call(&block)
-    #   end
-    # end
-
-    # # http://goo.gl/PvwUXj#518-implicit-object
-    # class ImplicitNode < Node
-    #   def login_endpoint(&block)
-    #     self.data[:loginEndpoint] = Swagger::BlocksV2::LoginEndpointNode.call(&block)
-    #   end
-    # end
-
-    # # http://goo.gl/PvwUXj#5110-login-endpoint-object
-    # class LoginEndpointNode < Node; end
-
-    # # http://goo.gl/PvwUXj#519-authorization-code-object
-    # class AuthorizationCodeNode < Node
-    #   def token_request_endpoint(&block)
-    #     self.data[:tokenRequestEndpoint] = Swagger::BlocksV2::TokenRequestEndpointNode.call(&block)
-    #   end
-
-    #   def token_endpoint(&block)
-    #     self.data[:tokenEndpoint] = Swagger::BlocksV2::TokenEndpointNode.call(&block)
-    #   end
-    # end
-
-    # # http://goo.gl/PvwUXj#5111-token-request-endpoint-object
-    # class TokenRequestEndpointNode < Node; end
-
-    # # http://goo.gl/PvwUXj#5112-token-endpoint-object
-    # class TokenEndpointNode < Node; end
-
-    # -----
-    # Nodes for API Declarations.
-    # -----
 
     class PathsNode < Node
       def path(path_str, &block)
@@ -285,8 +205,15 @@ module Swagger
     end
 
     class PathNode < Node
+      # TODO allow dereferencing of $ref for external definition
+
+      # TODO support ^x- Vendor Extensions
+
       def operation(op, &block)
-        # TODO validate operation as per spec
+        op = op.to_sym
+        # TODO proper exception class
+        raise "Invalid operation" unless [:get, :put, :post, :delete,
+          :options, :head, :patch].include?(op)
         self.data[op] = Swagger::BlocksV2::OperationNode.call(&block)
       end
     end
@@ -298,29 +225,40 @@ module Swagger
       end
 
       def response(resp, &block)
-        # TODO validate operation as per spec
+        # TODO validate 'resp' is as per spec
         self.data[:responses] ||= {}
         self.data[:responses][resp] = Swagger::BlocksV2::ResponseNode.call(&block)
       end
 
-      # def response_message(&block)
-      #   self.data[:responseMessages] ||= []
-      #   self.data[:responseMessages] << Swagger::BlocksV2::Node.call(&block)
-      # end
+      def externalDocs(&block)
+        self.data[:externalDocs] = Swagger::BlocksV2::ExternalDocsNode.call(&block)
+      end
 
-      # def authorization(name, &block)
-      #   self.data[:authorizations] ||= Swagger::BlocksV2::ApiAuthorizationsNode.new
-      #   self.data[:authorizations].authorization(name, &block)
-      # end
-
-      def items(&block)
-        self.data[:items] = Swagger::BlocksV2::ItemsNode.call(&block)
+      def security(&block)
+        self.data[:security] ||= []
+        self.data[:security] << Swagger::BlocksV2::SecurityRequirementNode.call(&block)
       end
     end
+
+    class ExternalDocsNode < Node; end
+
+    class SecurityRequirementNode < Node; end
 
     class ResponseNode < Node
       def schema(&block)
         self.data[:schema] = Swagger::BlocksV2::SchemaNode.call(&block)
+      end
+
+      def header(head, &block)
+        # TODO validate 'head' is as per spec
+        self.data[:headers] ||= {}
+        self.data[:headers][head] = Swagger::BlocksV2::HeaderNode.call(&block)
+      end
+
+      def example(exam, &block)
+        # TODO validate 'exam' is as per spec
+        self.data[:examples] ||= {}
+        self.data[:examples][exam] = Swagger::BlocksV2::ExampleNode.call(&block)
       end
     end
 
@@ -330,51 +268,35 @@ module Swagger
       end
     end
 
-    # # NOTE: in the spec this is different than Resource Listing's authorizations.
-    # # http://goo.gl/PvwUXj#514-authorizations-object
-    # class ApiAuthorizationsNode < Node
-    #   def authorization(name, &block)
-    #     self.data[name] ||= Swagger::BlocksV2::ApiAuthorizationNode.call(&block)
-    #   end
-    # end
+    class HeaderNode < Node
+      def items(&block)
+        self.data[:items] = Swagger::BlocksV2::ItemsNode.call(&block)
+      end
+    end
 
-    # # NOTE: in the spec this is different than Resource Listing's authorization.
-    # # http://goo.gl/PvwUXj#515-authorization-object
-    # class ApiAuthorizationNode < Node
-    #   def as_json
-    #     # Special case: the API Authorization object is weirdly the only array of hashes.
-    #     # Override the default hash behavior and return an array.
-    #     self.data[:_scopes] ||= []
-    #     self.data[:_scopes].map { |s| s.as_json }
-    #   end
+    class ExampleNode < Node; end
 
-    #   def scope(&block)
-    #     self.data[:_scopes] ||= []
-    #     self.data[:_scopes] << Swagger::BlocksV2::ApiAuthorizationScopeNode.call(&block)
-    #   end
-    # end
-
-    # # NOTE: in the spec this is different than Resource Listing's scope object.
-    # # http://goo.gl/PvwUXj#5211-scope-object
-    # class ApiAuthorizationScopeNode < Node; end
-
-    # http://goo.gl/PvwUXj#434-items-object
     class ItemsNode < Node; end
 
-    # http://goo.gl/PvwUXj#524-parameter-object
     class ParameterNode < Node
+      def schema(&block)
+        self.data[:schema] = Swagger::BlocksV2::SchemaNode.call(&block)
+      end
 
       def items(&block)
         self.data[:items] = Swagger::BlocksV2::ItemsNode.call(&block)
       end
-
     end
 
-    # -----
-    # Nodes for Models.
-    # -----
+    class TagNode < Node
 
-    # http://goo.gl/PvwUXj#526-models-object
+      # TODO support ^x- Vendor Extensions
+
+      def externalDocs(&block)
+        self.data[:externalDocs] = Swagger::BlocksV2::ExternalDocsNode.call(&block)
+      end
+    end
+
     class DefinitionsNode < Node
       def merge!(other_definitions_node)
         self.data.merge!(other_definitions_node.data)
@@ -385,7 +307,6 @@ module Swagger
       end
     end
 
-    # http://goo.gl/PvwUXj#527-model-object
     class DefinitionNode < Node
       def property(name, &block)
         self.data[:properties] ||= Swagger::BlocksV2::PropertiesNode.new
@@ -393,14 +314,12 @@ module Swagger
       end
     end
 
-    # http://goo.gl/PvwUXj#527-model-object
     class PropertiesNode < Node
       def property(name, &block)
         self.data[name] = Swagger::BlocksV2::PropertyNode.call(&block)
       end
     end
 
-    # http://goo.gl/PvwUXj#527-model-object
     class PropertyNode < Node
       def items(&block)
         self.data[:items] = Swagger::BlocksV2::ItemsNode.call(&block)
