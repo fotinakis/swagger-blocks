@@ -18,11 +18,7 @@ module Swagger
         parse_swaggered_classes(swaggered_classes)
       [:paths, :definitions].each do |resource_type|
         unless data[resource_type].empty?
-          result = data[resource_type].inject({}) do |memo, (name, node)|
-            memo[name] = node.as_json
-            memo
-          end
-          data[:root].key(resource_type, result)
+          data[:root].key(resource_type, data[resource_type])
         end
       end
       data[:root].as_json
@@ -143,6 +139,9 @@ module Swagger
           elsif value.is_a?(Array)
             result[key] = []
             value.each { |v| result[key] << (v.respond_to?(:as_json) ? v.as_json : v) }
+          elsif value.is_a?(Hash)
+            result[key] = {}
+            value.each_pair {|k, v| result[key][k] = (v.respond_to?(:as_json) ? v.as_json : v) }
           else
             result[key] = value
           end
@@ -288,8 +287,7 @@ module Swagger
     class PathNode < Node
       def operation(op, &block)
         # TODO validate operation as per spec
-        self.data[:operations] ||= {}
-        self.data[:operations][op] = Swagger::BlocksV2::OperationNode.call(&block)
+        self.data[op] = Swagger::BlocksV2::OperationNode.call(&block)
       end
     end
 
@@ -299,16 +297,34 @@ module Swagger
         self.data[:parameters] << Swagger::BlocksV2::ParameterNode.call(&block)
       end
 
-      def response_message(&block)
-        self.data[:responseMessages] ||= []
-        self.data[:responseMessages] << Swagger::BlocksV2::Node.call(&block)
+      def response(resp, &block)
+        # TODO validate operation as per spec
+        self.data[:responses] ||= {}
+        self.data[:responses][resp] = Swagger::BlocksV2::ResponseNode.call(&block)
       end
+
+      # def response_message(&block)
+      #   self.data[:responseMessages] ||= []
+      #   self.data[:responseMessages] << Swagger::BlocksV2::Node.call(&block)
+      # end
 
       # def authorization(name, &block)
       #   self.data[:authorizations] ||= Swagger::BlocksV2::ApiAuthorizationsNode.new
       #   self.data[:authorizations].authorization(name, &block)
       # end
 
+      def items(&block)
+        self.data[:items] = Swagger::BlocksV2::ItemsNode.call(&block)
+      end
+    end
+
+    class ResponseNode < Node
+      def schema(&block)
+        self.data[:schema] = Swagger::BlocksV2::SchemaNode.call(&block)
+      end
+    end
+
+    class SchemaNode < Node
       def items(&block)
         self.data[:items] = Swagger::BlocksV2::ItemsNode.call(&block)
       end
@@ -346,7 +362,13 @@ module Swagger
     class ItemsNode < Node; end
 
     # http://goo.gl/PvwUXj#524-parameter-object
-    class ParameterNode < Node; end
+    class ParameterNode < Node
+
+      def items(&block)
+        self.data[:items] = Swagger::BlocksV2::ItemsNode.call(&block)
+      end
+
+    end
 
     # -----
     # Nodes for Models.

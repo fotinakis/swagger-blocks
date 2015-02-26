@@ -28,9 +28,53 @@ class PetControllerV2
     key :schemes, ["http"]
     key :consumes, ["application/json"]
     key :produces, ["application/json"]
-    # paths do
+  end
 
-    # end
+  swagger_path('/pets') do
+    operation('get') do
+      key :description, "Returns all pets from the system that the user has access to"
+      key :operationId, 'findPets'
+      key :produces, [
+        "application/json",
+        "application/xml",
+        "text/xml",
+        "text/html"
+      ]
+      parameter do
+        key :name, :tags
+        key :in, :query
+        key :description, "tags to filter by"
+        key :required, false
+        key :type, :array
+        items do
+          key :type, :string
+        end
+        key :collectionFormat, :csv
+      end
+      parameter do
+        key :name, :limit
+        key :in, :query
+        key :description, "maximum number of results to return"
+        key :required, false
+        key :type, :integer
+        key :format, :int32
+      end
+      response('200') do
+        key :description, "pet response"
+        schema do
+          key :type, :array
+          items do
+            key :"$ref", "#/definitions/pet" # TODO reference by definition name
+          end
+        end
+      end
+      response('default') do
+        key :description, "unexpected error"
+        schema do
+          key :"$ref", "#/definitions/errorModel"  # TODO reference by definition name
+        end
+      end
+    end
   end
 
 end
@@ -52,9 +96,24 @@ class Pet
     end
   end
 
-  # swagger_definition(:petInput) do
-  #   key :allOf
-  # end
+  # TODO JSON-Schema 'allOf' and similar
+
+end
+
+class ErrorModel
+  include Swagger::BlocksV2
+
+  swagger_definition(:errorModel) do
+    key :required, [:code, :message]
+    property :code do
+      key :type, :integer
+      key :format, :int32
+    end
+    property :message do
+      key :type, :string
+    end
+  end
+
 end
 
 describe Swagger::BlocksV2 do
@@ -62,7 +121,8 @@ describe Swagger::BlocksV2 do
     it 'outputs the correct data' do
       swaggered_classes = [
         PetControllerV2,
-        Pet
+        Pet,
+        ErrorModel
       ]
       actual = Swagger::BlocksV2.build_json(swaggered_classes)
 
@@ -71,14 +131,12 @@ describe Swagger::BlocksV2 do
       data = JSON.parse(RESOURCE_LISTING_JSON_V2)
 
       expect(actual['info']).to eq(data['info'])
-      # expect(actual['authorizations']).to eq(data['authorizations'])
-      # actual['apis'].each_with_index do |api_data, i|
-      #   expect(api_data).to eq(data['apis'][i])
-      # end
+      expect(actual['paths']).to eq(data['paths'])
+      expect(actual['definitions']).to eq(data['definitions'])
       expect(actual).to eq(data)
     end
     it 'is idempotent' do
-      swaggered_classes = [PetControllerV2, Pet]
+      swaggered_classes = [PetControllerV2, Pet, ErrorModel]
       actual = JSON.parse(Swagger::BlocksV2.build_json(swaggered_classes).to_json)
       actual = JSON.parse(Swagger::BlocksV2.build_json(swaggered_classes).to_json)
       data = JSON.parse(RESOURCE_LISTING_JSON_V2)
