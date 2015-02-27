@@ -1,12 +1,15 @@
 require 'json'
-require 'swagger/blocks_v2'
+require 'swagger/blocks'
 
 # TODO Test data originally based on the Swagger UI example data
 
 RESOURCE_LISTING_JSON_V2 = open(File.expand_path('../swagger_v2_partial.json', __FILE__)).read
 
+# set initially before classes parsed
+Swagger::Blocks.spec_version = '2.0'
+
 class PetControllerV2
-  include Swagger::BlocksV2
+  include Swagger::Blocks
 
   swagger_root do
     key :swagger, '2.0'
@@ -79,8 +82,8 @@ class PetControllerV2
 
 end
 
-class Pet
-  include Swagger::BlocksV2
+class PetV2
+  include Swagger::Blocks
 
   swagger_definition(:pet) do
     key :required, [:id, :name]
@@ -100,8 +103,8 @@ class Pet
 
 end
 
-class ErrorModel
-  include Swagger::BlocksV2
+class ErrorModelV2
+  include Swagger::Blocks
 
   swagger_definition(:errorModel) do
     key :required, [:code, :message]
@@ -116,15 +119,21 @@ class ErrorModel
 
 end
 
-describe Swagger::BlocksV2 do
-  describe 'build_json' do
+describe 'Swagger::Blocks v2' do
+
+  before do
+    # set again as other spec may have changed it
+    Swagger::Blocks.spec_version = '2.0'
+  end
+
+  describe 'v2 build_json' do
     it 'outputs the correct data' do
       swaggered_classes = [
         PetControllerV2,
-        Pet,
-        ErrorModel
+        PetV2,
+        ErrorModelV2
       ]
-      actual = Swagger::BlocksV2.build_json(swaggered_classes)
+      actual = Swagger::Blocks.build_root_json(swaggered_classes)
 
       # Multiple expectations for better test diff output.
       actual = JSON.parse(actual.to_json)  # For access consistency.
@@ -136,24 +145,21 @@ describe Swagger::BlocksV2 do
       expect(actual).to eq(data)
     end
     it 'is idempotent' do
-      swaggered_classes = [PetControllerV2, Pet, ErrorModel]
-      actual = JSON.parse(Swagger::BlocksV2.build_json(swaggered_classes).to_json)
-      actual = JSON.parse(Swagger::BlocksV2.build_json(swaggered_classes).to_json)
+      swaggered_classes = [PetControllerV2, PetV2, ErrorModelV2]
+      actual = JSON.parse(Swagger::Blocks.build_root_json(swaggered_classes).to_json)
+      actual = JSON.parse(Swagger::Blocks.build_root_json(swaggered_classes).to_json)
       data = JSON.parse(RESOURCE_LISTING_JSON_V2)
       expect(actual).to eq(data)
     end
     it 'errors if no swagger_root is declared' do
       expect {
-        Swagger::BlocksV2.build_json([])
-      }.to raise_error(Swagger::BlocksV2::DeclarationError)
+        Swagger::Blocks.build_root_json([])
+      }.to raise_error(Swagger::Blocks::DeclarationError)
     end
     it 'errors if mulitple swagger_roots are declared' do
       expect {
-        Swagger::BlocksV2.build_json([PetControllerV2, PetControllerV2])
-      }.to raise_error(Swagger::BlocksV2::DeclarationError)
+        Swagger::Blocks.build_root_json([PetControllerV2, PetControllerV2])
+      }.to raise_error(Swagger::Blocks::DeclarationError)
     end
-    # it 'does not error if given non-swaggered classes' do
-    #   Swagger::BlocksV2.build_json([PetControllerV2])
-    # end
   end
 end
