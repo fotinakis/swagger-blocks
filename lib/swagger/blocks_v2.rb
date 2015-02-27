@@ -171,6 +171,58 @@ module Swagger
       def info(&block)
         self.data[:info] = InfoNode.call(&block)
       end
+
+      def parameter(param, &block)
+        # TODO validate 'param' is as per spec
+        self.data[:parameters] ||= {}
+        self.data[:parameters][param] = Swagger::BlocksV2::ParameterNode.call(&block)
+      end
+
+      def path(pth, &block)
+        self.data[:paths] ||= {}
+
+        temp_path_node = Swagger::BlocksV2::PathNode.call(&block)
+        path_node = self.data[:paths][path_str]
+
+        if path_node
+          # Merge this block with the previous PathNode by the same path key.
+          path_node.instance_eval(&block)
+        else
+          # First time we've seen a path block with the given path key.
+          self.data[:paths][path_str] = temp_path_node
+        end
+      end
+
+      def definition(name, &block)
+        self.data[:definitions] ||= {}
+
+        temp_def_node = Swagger::BlocksV2::DefinitionNode.call(&block)
+        def_node = self.data[:definitions][path_str]
+
+        if def_node
+          # Merge this block with the previous DefinitionNode by the same key.
+          def_node.instance_eval(&block)
+        else
+          # First time we've seen a definition block with the given key.
+          self.data[:definitions][name] = temp_def_node
+        end
+      end
+
+      def response(resp, &block)
+        # TODO validate 'resp' is as per spec
+        self.data[:responses] ||= {}
+        self.data[:responses][resp] = Swagger::BlocksV2::ResponseNode.call(&block)
+      end
+
+      def security_definition(name, &block)
+        self.data[:securityDefinitions] ||= {}
+        self.data[:securityDefinitions][name] = Swagger::BlocksV2::SecuritySchemeNode.call(&block)
+      end
+
+      def security(&block)
+        self.data[:security] ||= []
+        self.data[:security] << Swagger::BlocksV2::SecurityRequirementNode.call(&block)
+      end
     end
 
     class InfoNode < Node
@@ -187,26 +239,7 @@ module Swagger
 
     class LicenseNode < Node; end
 
-    class PathsNode < Node
-      def path(path_str, &block)
-        self.data[:paths] ||= {}
-
-        temp_path_node = Swagger::BlocksV2::PathNode.call(&block)
-        path_node = self.data[:paths][path_str]
-
-        if path_node
-          # Merge this block with the previous PathNode by the same path key.
-          path_node.instance_eval(&block)
-        else
-          # First time we've seen a path block with the given path key.
-          self.data[:paths][path_str] = temp_path_node
-        end
-      end
-    end
-
     class PathNode < Node
-      # TODO allow dereferencing of $ref for external definition
-
       # TODO support ^x- Vendor Extensions
 
       def operation(op, &block)
@@ -244,6 +277,17 @@ module Swagger
 
     class SecurityRequirementNode < Node; end
 
+    class SecuritySchemeNode < Node
+      # TODO support ^x- Vendor Extensions
+
+      def scope(name, description)
+        self.data[:scopes] ||= {}
+        self.data[:scopes][name] = description
+      end
+    end
+
+    class ScopeNode < Node; end
+
     class ResponseNode < Node
       def schema(&block)
         self.data[:schema] = Swagger::BlocksV2::SchemaNode.call(&block)
@@ -266,6 +310,19 @@ module Swagger
       def items(&block)
         self.data[:items] = Swagger::BlocksV2::ItemsNode.call(&block)
       end
+
+      # TODO allOf
+
+      # TODO properties
+
+      def xml(&block)
+        self.data[:xml] = Swagger::BlocksV2::XmlNode.call(&block)
+      end
+
+      def externalDocs(&block)
+        self.data[:externalDocs] = Swagger::BlocksV2::ExternalDocsNode.call(&block)
+      end
+
     end
 
     class HeaderNode < Node
@@ -273,6 +330,8 @@ module Swagger
         self.data[:items] = Swagger::BlocksV2::ItemsNode.call(&block)
       end
     end
+
+    class XmlNode < Node; end
 
     class ExampleNode < Node; end
 
@@ -294,16 +353,6 @@ module Swagger
 
       def externalDocs(&block)
         self.data[:externalDocs] = Swagger::BlocksV2::ExternalDocsNode.call(&block)
-      end
-    end
-
-    class DefinitionsNode < Node
-      def merge!(other_definitions_node)
-        self.data.merge!(other_definitions_node.data)
-      end
-
-      def definition(name, &block)
-        self.data[name] ||= Swagger::BlocksV2::DefinitionNode.call(&block)
       end
     end
 
