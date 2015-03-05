@@ -80,11 +80,11 @@ module Swagger
         end
         data = {root_node: self.limit_root_node(root_nodes) }
         if data[:root_node].is_swagger_2_0?
-          data[:path_nodes]       = path_node_map
+          data[:path_nodes] = path_node_map
           data[:definition_nodes] = definition_node_map
         else
-          data[:api_node_map]     = api_node_map
-          data[:models_nodes]     = models_nodes
+          data[:api_node_map] = api_node_map
+          data[:models_nodes] = models_nodes
         end
         data
       end
@@ -156,8 +156,7 @@ module Swagger
           path_node.instance_eval(&block)
         else
           # First time we've seen this path
-          @swagger_path_node_map[path] =
-            Swagger::Blocks::PathNode.call(:version => '2.0', &block)
+          @swagger_path_node_map[path] = Swagger::Blocks::PathNode.call(:version => '2.0', &block)
         end
       end
 
@@ -180,8 +179,7 @@ module Swagger
           definition_node.instance_eval(&block)
         else
           # First time we've seen this definition_node
-          @swagger_definition_node_map[name] =
-            Swagger::Blocks::DefinitionNode.call(:version => '2.0', &block)
+          @swagger_definition_node_map[name] = Swagger::Blocks::DefinitionNode.call(:version => '2.0', &block)
         end
       end
 
