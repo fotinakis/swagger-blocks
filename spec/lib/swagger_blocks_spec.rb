@@ -7,9 +7,6 @@ RESOURCE_LISTING_JSON = open(File.expand_path('../swagger_resource_listing.json'
 # https://github.com/wordnik/swagger-codegen/blob/master/src/test/resources/petstore-1.2/pet
 API_DECLARATION_JSON = open(File.expand_path('../swagger_api_declaration.json', __FILE__)).read
 
-# set initially before classes parsed
-Swagger::Blocks.spec_version = '1.2'
-
 class PetController
   include Swagger::Blocks
 
@@ -280,11 +277,6 @@ class BlankController; end
 
 
 describe 'Swagger::Blocks v1' do
-
-  before do
-    # set again as other spec may have changed it
-    Swagger::Blocks.spec_version = '1.2'
-  end
 
   describe 'build_root_json' do
     it 'outputs the correct data' do

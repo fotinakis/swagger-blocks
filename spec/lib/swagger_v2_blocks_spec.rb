@@ -5,9 +5,6 @@ require 'swagger/blocks'
 
 RESOURCE_LISTING_JSON_V2 = open(File.expand_path('../swagger_v2_partial.json', __FILE__)).read
 
-# set initially before classes parsed
-Swagger::Blocks.spec_version = '2.0'
-
 class PetControllerV2
   include Swagger::Blocks
 
@@ -120,11 +117,6 @@ class ErrorModelV2
 end
 
 describe 'Swagger::Blocks v2' do
-
-  before do
-    # set again as other spec may have changed it
-    Swagger::Blocks.spec_version = '2.0'
-  end
 
   describe 'v2 build_json' do
     it 'outputs the correct data' do
