@@ -133,7 +133,7 @@ module Swagger
           api_node.instance_eval(&block)
         else
           # First time we've seen this `swagger_api_root :resource_name`.
-          api_node = Swagger::Blocks::ApiDeclarationNode.call(&block)
+          api_node = Swagger::Blocks::ApiDeclarationNode.call(:version => '1.2', &block)
         end
 
         # Add it into the resource_name to node map (may harmlessly overwrite the same object).
@@ -164,6 +164,7 @@ module Swagger
       # v1.2: http://goo.gl/PvwUXj#526-models-object
       def swagger_model(name, &block)
         @swagger_models_node ||= Swagger::Blocks::ModelsNode.new
+        @swagger_models_node.version = '1.2'
         @swagger_models_node.model(name, &block)
       end
 
@@ -247,10 +248,12 @@ module Swagger
 
       def version
         return @version unless !instance_variable_defined?('@version') || @version.nil?
-        if data.has_key?(:swaggerVersion) && '1.2'.eql?(data[:swaggerVersion])
-          '1.2'
-        elsif data.has_key?(:swagger) && '2.0'.eql?(data[:swagger])
+        if data.has_key?(:swagger) && '2.0'.eql?(data[:swagger])
           '2.0'
+        elsif data.has_key?(:swaggerVersion) && '1.2'.eql?(data[:swaggerVersion])
+          '1.2'
+        else
+          raise NotSupportedError
         end
       end
 
@@ -267,9 +270,9 @@ module Swagger
 
       def initialize(*args)
         # An internal list of the user-defined names that uniquely identify each API tree.
-        if is_swagger_1_2?
-          @api_paths = []
-        end
+        # Only used in Swagger 1.2, but when initializing a root node we haven't seen the
+        # swaggerVersion/swagger key yet
+        @api_paths = []
         super
       end
 
@@ -284,6 +287,7 @@ module Swagger
         raise NotSupportedError unless is_swagger_1_2?
 
         self.data[:authorizations] ||= Swagger::Blocks::ResourceListingAuthorizationsNode.new
+        self.data[:authorizations].version = version
         self.data[:authorizations].authorization(name, &block)
       end
 
@@ -387,6 +391,7 @@ module Swagger
       def grant_type(name, &block)
         raise ArgumentError.new("#{name} not in #{GRANT_TYPES}") if !GRANT_TYPES.include?(name)
         self.data[:grantTypes] ||= Swagger::Blocks::GrantTypesNode.new
+        self.data[:grantTypes].version = version
         self.data[:grantTypes].implicit(&block) if name == :implicit
         self.data[:grantTypes].authorization_code(&block) if name == :authorization_code
       end
@@ -527,6 +532,7 @@ module Swagger
         raise NotSupportedError unless is_swagger_1_2?
 
         self.data[:authorizations] ||= Swagger::Blocks::ApiAuthorizationsNode.new
+        self.data[:authorizations].version = version
         self.data[:authorizations].authorization(name, &block)
       end
 
@@ -689,6 +695,7 @@ module Swagger
     class DefinitionNode < Node
       def property(name, &block)
         self.data[:properties] ||= Swagger::Blocks::PropertiesNode.new
+        self.data[:properties].version = version
         self.data[:properties].property(name, &block)
       end
     end
@@ -712,6 +719,7 @@ module Swagger
     class ModelNode < Node
       def property(name, &block)
         self.data[:properties] ||= Swagger::Blocks::PropertiesNode.new
+        self.data[:properties].version = version
         self.data[:properties].property(name, &block)
       end
     end
