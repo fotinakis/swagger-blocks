@@ -153,5 +153,10 @@ describe 'Swagger::Blocks v2' do
         Swagger::Blocks.build_root_json([PetControllerV2, PetControllerV2])
       }.to raise_error(Swagger::Blocks::DeclarationError)
     end
+    it 'errors if calling build_api_json' do
+      expect {
+        Swagger::Blocks.build_api_json('fake', [PetControllerV2])
+      }.to raise_error(Swagger::Blocks::NotSupportedError)
+    end
   end
 end
