@@ -277,7 +277,6 @@ class BlankController; end
 
 
 describe 'Swagger::Blocks v1' do
-
   describe 'build_root_json' do
     it 'outputs the correct data' do
       swaggered_classes = [

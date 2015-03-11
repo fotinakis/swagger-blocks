@@ -30,15 +30,15 @@ class PetControllerV2
     key :produces, ['application/json']
   end
 
-  swagger_path('/pets') do
-    operation('get') do
+  swagger_path '/pets' do
+    operation :get do
       key :description, 'Returns all pets from the system that the user has access to'
       key :operationId, 'findPets'
       key :produces, [
         'application/json',
         'application/xml',
         'text/xml',
-        'text/html'
+        'text/html',
       ]
       parameter do
         key :name, :tags
@@ -59,23 +59,23 @@ class PetControllerV2
         key :type, :integer
         key :format, :int32
       end
-      response('200') do
+      response 200 do
         key :description, 'pet response'
         schema do
           key :type, :array
           items do
-            key :'$ref', :pet
+            key :'$ref', :Pet
           end
         end
       end
-      response('default') do
+      response :default do
         key :description, 'unexpected error'
         schema do
-          key :'$ref', :errorModel
+          key :'$ref', :ErrorModel
         end
       end
     end
-    operation('post') do
+    operation :post do
       key :description, 'Creates a new pet in the store.  Duplicates are allowed'
       key :operationId, 'addPet'
       key :produces, [
@@ -87,33 +87,33 @@ class PetControllerV2
         key :description, 'Pet to add to the store'
         key :required, true
         schema do
-          key :'$ref', :petInput
+          key :'$ref', :PetInput
         end
       end
-      response('200') do
+      response 200 do
         key :description, 'pet response'
         schema do
-          key :'$ref', :pet
+          key :'$ref', :Pet
         end
       end
-      response('default') do
+      response :default do
         key :description, 'unexpected error'
         schema do
-          key :'$ref', :errorModel
+          key :'$ref', :ErrorModel
         end
       end
     end
   end
 
-  swagger_path('/pets/{id}') do
-    operation('get') do
+  swagger_path '/pets/{id}' do
+    operation :get do
       key :description, 'Returns a user based on a single ID, if the user does not have access to the pet'
       key :operationId, 'findPetById'
       key :produces, [
         'application/json',
         'application/xml',
         'text/xml',
-        'text/html'
+        'text/html',
       ]
       parameter do
         key :name, :id
@@ -123,20 +123,20 @@ class PetControllerV2
         key :type, :integer
         key :format, :int64
       end
-      response('200') do
+      response 200 do
         key :description, 'pet response'
         schema do
-          key :'$ref', :pet
+          key :'$ref', :Pet
         end
       end
-      response('default') do
+      response :default do
         key :description, 'unexpected error'
         schema do
-          key :'$ref', :errorModel
+          key :'$ref', :ErrorModel
         end
       end
     end
-    operation('delete') do
+    operation :delete do
       key :description, 'deletes a single pet based on the ID supplied'
       key :operationId, 'deletePet'
       parameter do
@@ -147,13 +147,13 @@ class PetControllerV2
         key :type, :integer
         key :format, :int64
       end
-      response('204') do
+      response 204 do
         key :description, 'pet deleted'
       end
-      response('default') do
+      response :default do
         key :description, 'unexpected error'
         schema do
-          key :'$ref', :errorModel
+          key :'$ref', :ErrorModel
         end
       end
     end
@@ -164,7 +164,7 @@ end
 class PetV2
   include Swagger::Blocks
 
-  swagger_schema(:pet) do
+  swagger_schema :Pet do
     key :required, [:id, :name]
     property :id do
       key :type, :integer
@@ -178,10 +178,10 @@ class PetV2
     end
   end
 
-  swagger_schema(:petInput) do
+  swagger_schema :PetInput do
     allOf do
       schema do
-        key :'$ref', :pet
+        key :'$ref', :Pet
       end
       schema do
         key :required, [:name]
@@ -197,7 +197,7 @@ end
 class ErrorModelV2
   include Swagger::Blocks
 
-  swagger_schema(:errorModel) do
+  swagger_schema :ErrorModel do
     key :required, [:code, :message]
     property :code do
       key :type, :integer
@@ -207,12 +207,10 @@ class ErrorModelV2
       key :type, :string
     end
   end
-
 end
 
 describe 'Swagger::Blocks v2' do
-
-  describe 'v2 build_json' do
+  describe 'build_json' do
     it 'outputs the correct data' do
       swaggered_classes = [
         PetControllerV2,
@@ -220,12 +218,14 @@ describe 'Swagger::Blocks v2' do
         ErrorModelV2
       ]
       actual = Swagger::Blocks.build_root_json(swaggered_classes)
-
-      # Multiple expectations for better test diff output.
       actual = JSON.parse(actual.to_json)  # For access consistency.
       data = JSON.parse(RESOURCE_LISTING_JSON_V2)
 
+      # Multiple expectations for better test diff output.
       expect(actual['info']).to eq(data['info'])
+      expect(actual['paths']).to be
+      expect(actual['paths']['/pets']).to be
+      expect(actual['paths']['/pets']).to eq(data['paths']['/pets'])
       expect(actual['paths']).to eq(data['paths'])
       expect(actual['definitions']).to eq(data['definitions'])
       expect(actual).to eq(data)

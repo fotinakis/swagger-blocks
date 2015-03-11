@@ -11,8 +11,8 @@ It helps you write API docs in the [Swagger](https://helloreverb.com/developers/
 
 * Supports **live updating** by design. Change code, refresh your API docs.
 * **Works with all Ruby web frameworks** including Rails, Sinatra, etc.
-* **100% support** for all features of the [Swagger 1.2 spec](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md).
-* Flexible—you can use Swagger::Blocks anywhere, split up blocks to fit your style preferences, etc. Since it's pure Ruby and serves definitions dynamically, you can easily use initializers/config objects to change values or even show/hide different APIs based on environment.
+* **100% support** for all features of the [Swagger 1.2](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md) and [Swagger 2.0](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md) specs.
+* Flexible—you can use Swagger::Blocks anywhere, split up blocks to fit your style preferences, etc. Since it's pure Ruby and serves definitions dynamically, you can easily use initializers/config objects to change values or even **show different APIs based on environment**.
 * 1:1 naming with the Swagger spec—block names and nesting should match almost exactly with the swagger spec, with rare exceptions to make things more convenient.
 
 ## Swagger UI demo
@@ -26,58 +26,125 @@ http://petstore.swagger.wordnik.com/#!/pet
 Add this line to your application's Gemfile:
 
     gem 'swagger-blocks'
-    
+
 Or install directly with `gem install swagger-blocks`.
 
-## Example (Rails)
+## Swagger 2.0 example (Rails)
 
-This is a simplified example based on the objects in the Petstore [Swagger Sample App](http://petstore.swagger.wordnik.com/#!/pet). For a more complex and complete example, see the [swagger_blocks_spec.rb](https://github.com/fotinakis/swagger-blocks/blob/master/spec/lib/swagger_blocks_spec.rb) file.
+This is a simplified example based on the objects in the Petstore [Swagger Sample App](http://petstore.swagger.wordnik.com/#!/pet). For a more complex and complete example, see the [swagger_v2_blocks_spec.rb](https://github.com/fotinakis/swagger-blocks/blob/master/spec/lib/swagger_v2_blocks_spec.rb) file, or see the [v1.2 docs](https://github.com/fotinakis/swagger-blocks/blob/master/README_v1_2.md).
 
-Also note that Rails is not required, you can use Swagger::Blocks with any Ruby web framework.
+Also note that **Rails is not required**, you can use Swagger::Blocks in plain Ruby objects.
 
-#### PetsController
-
-Parameters and features below are defined by the [Swagger 1.2 spec](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md).
+### PetsController
 
 ```Ruby
 class PetsController < ActionController::Base
   include Swagger::Blocks
 
-  swagger_api_root :pets do
-    key :swaggerVersion, '1.2'
-    key :apiVersion, '1.0.0'
-    key :basePath, 'http://petstore.swagger.wordnik.com/api'
-    key :resourcePath, '/pets'
-    api do
-      key :path, '/pets/{petId}'
-      operation do
-        key :method, 'GET'
-        key :summary, 'Find pet by ID'
-        key :notes, 'Returns a pet based on ID'
-        key :type, :Pet
-        key :nickname, :getPetById
-        parameter do
-          key :paramType, :path
-          key :name, :petId
-          key :description, 'ID of pet that needs to be fetched'
-          key :required, true
-          key :type, :integer
+  swagger_path '/pets/{id}' do
+    operation :get do
+      key :description, 'Returns a single pet if the user has access'
+      key :operationId, 'findPetById'
+      parameter do
+        key :name, :id
+        key :in, :path
+        key :description, 'ID of pet to fetch'
+        key :required, true
+        key :type, :integer
+        key :format, :int64
+      end
+      response 200 do
+        key :description, 'pet response'
+        schema do
+          key :'$ref', :Pet
         end
-        response_message do
-          key :code, 400
-          key :message, 'Invalid ID supplied'
-        end
-        response_message do
-          key :code, 404
-          key :message, 'Pet not found'
+      end
+      response :default do
+        key :description, 'unexpected error'
+        schema do
+          key :'$ref', :ErrorModel
         end
       end
     end
   end
-  
+  swagger_path '/pets' do
+    operation :get do
+      key :description, 'Returns all pets from the system that the user has access to'
+      key :operationId, 'findPets'
+      key :produces, [
+        'application/json',
+        'text/html',
+      ]
+      parameter do
+        key :name, :tags
+        key :in, :query
+        key :description, 'tags to filter by'
+        key :required, false
+        key :type, :array
+        items do
+          key :type, :string
+        end
+        key :collectionFormat, :csv
+      end
+      parameter do
+        key :name, :limit
+        key :in, :query
+        key :description, 'maximum number of results to return'
+        key :required, false
+        key :type, :integer
+        key :format, :int32
+      end
+      response 200 do
+        key :description, 'pet response'
+        schema do
+          key :type, :array
+          items do
+            key :'$ref', :Pet
+          end
+        end
+      end
+      response :default do
+        key :description, 'unexpected error'
+        schema do
+          key :'$ref', :ErrorModel
+        end
+      end
+    end
+    operation :post do
+      key :description, 'Creates a new pet in the store.  Duplicates are allowed'
+      key :operationId, 'addPet'
+      key :produces, [
+        'application/json'
+      ]
+      parameter do
+        key :name, :pet
+        key :in, :body
+        key :description, 'Pet to add to the store'
+        key :required, true
+        schema do
+          key :'$ref', :PetInput
+        end
+      end
+      response 200 do
+        key :description, 'pet response'
+        schema do
+          key :'$ref', :Pet
+        end
+      end
+      response :default do
+        key :description, 'unexpected error'
+        schema do
+          key :'$ref', :ErrorModel
+        end
+      end
+    end
+  end
+
   # ...
 end
 ```
+
+### Models
 
 #### Pet model
 
@@ -85,42 +152,64 @@ end
 class Pet < ActiveRecord::Base
   include Swagger::Blocks
 
-  swagger_model :Pet do
-    key :id, :Pet
+  swagger_schema :Pet do
     key :required, [:id, :name]
     property :id do
       key :type, :integer
       key :format, :int64
-      key :description, 'unique identifier for the pet'
-      key :minimum, '0.0'
-      key :maximum, '100.0'
     end
     property :name do
       key :type, :string
     end
-    property :photoUrls do
-      key :type, :array
-      items do
-        key :type, :string
-      end
-    end
-    property :status do
+    property :tag do
       key :type, :string
-      key :description, 'pet status in the store'
-      key :enum, [:available, :pending, :sold]
     end
   end
-  
+
+  swagger_schema :PetInput do
+    allOf do
+      schema do
+        key :'$ref', :Pet
+      end
+      schema do
+        key :required, [:name]
+        property :id do
+          key :type, :integer
+          key :format, :int64
+        end
+      end
+    end
+  end
+
   # ...
 end
 ```
 
-#### Docs controller
+#### Error model
+
+``` Ruby
+class ErrorModel  # Notice, this is just a plain ruby object.
+  include Swagger::Blocks
+
+  swagger_schema :ErrorModel do
+    key :required, [:code, :message]
+    property :code do
+      key :type, :integer
+      key :format, :int32
+    end
+    property :message do
+      key :type, :string
+    end
+  end
+end
+```
+
+### Docs controller
 
 To integrate these definitions with Swagger UI, we need a docs controller that can serve the JSON definitions.
 
 ```Ruby
-resources :apidocs, only: [:index, :show]
+resources :apidocs, only: [:index]
 ```
 
 ```Ruby
@@ -128,52 +217,53 @@ class ApidocsController < ActionController::Base
   include Swagger::Blocks
 
   swagger_root do
-    key :swaggerVersion, '1.2'
-    key :apiVersion, '1.0.0'
+    key :swagger, '2.0'
     info do
-      key :title, 'Swagger Sample App'
+      key :version, '1.0.0'
+      key :title, 'Swagger Petstore'
+      key :description, 'A sample API that uses a petstore as an example to ' \
+                        'demonstrate features in the swagger-2.0 specification'
+      key :termsOfService, 'http://helloreverb.com/terms/'
+      contact do
+        key :name, 'Wordnik API Team'
+      end
+      license do
+        key :name, 'MIT'
+      end
     end
-    api do
-      key :path, '/pets'
-      key :description, 'Operations about pets'
-    end
+    key :host, 'petstore.swagger.wordnik.com'
+    key :basePath, '/api'
+    key :consumes, ['application/json']
+    key :produces, ['application/json']
   end
-  
+
   # A list of all classes that have swagger_* declarations.
   SWAGGERED_CLASSES = [
     PetsController,
-    Pets,
+    Pet,
+    ErrorModel,
     self,
   ].freeze
-  
+
   def index
     render json: Swagger::Blocks.build_root_json(SWAGGERED_CLASSES)
   end
-
-  def show
-    render json: Swagger::Blocks.build_api_json(params[:id], SWAGGERED_CLASSES)
-  end
 end
-
 ```
 
-The special part of this controller are these lines:
+The special part of this controller is this line:
 
 ```Ruby
-render json: Swagger::Blocks.build_root_json(SWAGGERED_CLASSES)
+render json: Swagger::Blocks.build_root_json(swaggered_classes)
 ```
 
-```Ruby
-render json: Swagger::Blocks.build_api_json(params[:id], SWAGGERED_CLASSES)
-```
-
-Those are the only lines necessary to build the root Swagger [Resource Listing](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#51-resource-listing) JSON and the JSON for each Swagger [API Declaration](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#52-api-declaration). You simply pass in a list of all the "swaggered" classes in your app.
+That is the only line necessary to build the full [root Swagger object](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#schema) JSON and all definitions underneath it. You simply pass in a list of all the "swaggered" classes in your app.
 
 Now, simply point Swagger UI at `/apidocs` and everything should Just Work™. If you change any of the Swagger block definitions, you can simply refresh Swagger UI to see the changes.
 
 ## Reference
 
-See the [swagger_blocks_spec.rb](https://github.com/fotinakis/swagger-blocks/blob/master/spec/lib/swagger_blocks_spec.rb) for examples of more complex features and declarations possible.
+See the [swagger_v2_blocks_spec.rb](https://github.com/fotinakis/swagger-blocks/blob/master/spec/lib/swagger_v2_blocks_spec.rb) for examples of more complex features and declarations possible.
 
 ## Contributing
 
@@ -185,9 +275,12 @@ See the [swagger_blocks_spec.rb](https://github.com/fotinakis/swagger-blocks/blo
 
 ## Release notes
 
+* v1.1: Support for Swagger 2.0 spec.
 * v1.0.1: Make backwards-compatible with Ruby 1.9.3.
 * v1.0.0: Initial major release.
 
 ## Credits
 
-Original idea inspired by **[@richhollis](https://github.com/richhollis/)**'s [swagger-docs](https://github.com/richhollis/swagger-docs/) gem.
+Thanks to [@ali-graham](https://github.com/ali-graham) for contributing support for Swagger 2.0.
+
+Original idea inspired by [@richhollis](https://github.com/richhollis/)'s [swagger-docs](https://github.com/richhollis/swagger-docs/) gem.
