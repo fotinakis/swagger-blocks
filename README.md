@@ -254,7 +254,7 @@ end
 The special part of this controller is this line:
 
 ```Ruby
-render json: Swagger::Blocks.build_root_json(swaggered_classes)
+render json: Swagger::Blocks.build_root_json(SWAGGERED_CLASSES)
 ```
 
 That is the only line necessary to build the full [root Swagger object](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#schema) JSON and all definitions underneath it. You simply pass in a list of all the "swaggered" classes in your app.
