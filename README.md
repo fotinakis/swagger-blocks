@@ -261,6 +261,10 @@ That is the only line necessary to build the full [root Swagger object](https://
 
 Now, simply point Swagger UI at `/apidocs` and everything should Just Work™. If you change any of the Swagger block definitions, you can simply refresh Swagger UI to see the changes.
 
+### Swagger 1.2 example (Rails)
+
+See the [v1.2 docs](https://github.com/fotinakis/swagger-blocks/blob/master/README_v1_2.md).
+
 ## Reference
 
 See the [swagger_v2_blocks_spec.rb](https://github.com/fotinakis/swagger-blocks/blob/master/spec/lib/swagger_v2_blocks_spec.rb) for examples of more complex features and declarations possible.
