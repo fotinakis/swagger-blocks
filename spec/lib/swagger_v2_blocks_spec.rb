@@ -11,39 +11,39 @@ class PetControllerV2
   swagger_root do
     key :swagger, '2.0'
     info do
-      key :version, "1.0.0"
+      key :version, '1.0.0'
       key :title, 'Swagger Petstore'
-      key :description, "A sample API that uses a petstore as an example to " \
-                        "demonstrate features in the swagger-2.0 specification"
+      key :description, 'A sample API that uses a petstore as an example to ' \
+                        'demonstrate features in the swagger-2.0 specification'
       key :termsOfService, 'http://helloreverb.com/terms/'
       contact do
-        key :name, "Wordnik API Team"
+        key :name, 'Wordnik API Team'
       end
       license do
         key :name, 'MIT'
       end
     end
-    key :host, "petstore.swagger.wordnik.com"
-    key :basePath, "/api"
-    key :schemes, ["http"]
-    key :consumes, ["application/json"]
-    key :produces, ["application/json"]
+    key :host, 'petstore.swagger.wordnik.com'
+    key :basePath, '/api'
+    key :schemes, ['http']
+    key :consumes, ['application/json']
+    key :produces, ['application/json']
   end
 
   swagger_path('/pets') do
     operation('get') do
-      key :description, "Returns all pets from the system that the user has access to"
+      key :description, 'Returns all pets from the system that the user has access to'
       key :operationId, 'findPets'
       key :produces, [
-        "application/json",
-        "application/xml",
-        "text/xml",
-        "text/html"
+        'application/json',
+        'application/xml',
+        'text/xml',
+        'text/html'
       ]
       parameter do
         key :name, :tags
         key :in, :query
-        key :description, "tags to filter by"
+        key :description, 'tags to filter by'
         key :required, false
         key :type, :array
         items do
@@ -54,52 +54,52 @@ class PetControllerV2
       parameter do
         key :name, :limit
         key :in, :query
-        key :description, "maximum number of results to return"
+        key :description, 'maximum number of results to return'
         key :required, false
         key :type, :integer
         key :format, :int32
       end
       response('200') do
-        key :description, "pet response"
+        key :description, 'pet response'
         schema do
           key :type, :array
           items do
-            key :"$ref", :pet
+            key :'$ref', :pet
           end
         end
       end
       response('default') do
-        key :description, "unexpected error"
+        key :description, 'unexpected error'
         schema do
-          key :"$ref", :errorModel
+          key :'$ref', :errorModel
         end
       end
     end
     operation('post') do
-      key :description, "Creates a new pet in the store.  Duplicates are allowed"
+      key :description, 'Creates a new pet in the store.  Duplicates are allowed'
       key :operationId, 'addPet'
       key :produces, [
-        "application/json"
+        'application/json'
       ]
       parameter do
         key :name, :pet
         key :in, :body
-        key :description, "Pet to add to the store"
+        key :description, 'Pet to add to the store'
         key :required, true
         schema do
-          key :"$ref", :petInput
+          key :'$ref', :petInput
         end
       end
       response('200') do
-        key :description, "pet response"
+        key :description, 'pet response'
         schema do
-          key :"$ref", :pet
+          key :'$ref', :pet
         end
       end
       response('default') do
-        key :description, "unexpected error"
+        key :description, 'unexpected error'
         schema do
-          key :"$ref", :errorModel
+          key :'$ref', :errorModel
         end
       end
     end
@@ -107,53 +107,53 @@ class PetControllerV2
 
   swagger_path('/pets/{id}') do
     operation('get') do
-      key :description, "Returns a user based on a single ID, if the user does not have access to the pet"
+      key :description, 'Returns a user based on a single ID, if the user does not have access to the pet'
       key :operationId, 'findPetById'
       key :produces, [
-        "application/json",
-        "application/xml",
-        "text/xml",
-        "text/html"
+        'application/json',
+        'application/xml',
+        'text/xml',
+        'text/html'
       ]
       parameter do
         key :name, :id
         key :in, :path
-        key :description, "ID of pet to fetch"
+        key :description, 'ID of pet to fetch'
         key :required, true
         key :type, :integer
         key :format, :int64
       end
       response('200') do
-        key :description, "pet response"
+        key :description, 'pet response'
         schema do
-          key :"$ref", :pet
+          key :'$ref', :pet
         end
       end
       response('default') do
-        key :description, "unexpected error"
+        key :description, 'unexpected error'
         schema do
-          key :"$ref", :errorModel
+          key :'$ref', :errorModel
         end
       end
     end
     operation('delete') do
-      key :description, "deletes a single pet based on the ID supplied"
+      key :description, 'deletes a single pet based on the ID supplied'
       key :operationId, 'deletePet'
       parameter do
         key :name, :id
         key :in, :path
-        key :description, "ID of pet to delete"
+        key :description, 'ID of pet to delete'
         key :required, true
         key :type, :integer
         key :format, :int64
       end
       response('204') do
-        key :description, "pet deleted"
+        key :description, 'pet deleted'
       end
       response('default') do
-        key :description, "unexpected error"
+        key :description, 'unexpected error'
         schema do
-          key :"$ref", :errorModel
+          key :'$ref', :errorModel
         end
       end
     end
@@ -181,7 +181,7 @@ class PetV2
   swagger_schema(:petInput) do
     allOf do
       schema do
-        key :"$ref", :pet
+        key :'$ref', :pet
       end
       schema do
         key :required, [:name]

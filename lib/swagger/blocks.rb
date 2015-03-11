@@ -32,8 +32,8 @@ module Swagger
       data = Swagger::Blocks::InternalHelpers.parse_swaggered_classes(swaggered_classes)
       if !data[:root_node].is_swagger_1_2?
         raise NotSupportedError.new(
-          "build_api_json only supports Swagger 1.2, you do not need to call this method " +
-          "for Swagger >= 2.0 definitions."
+          'build_api_json only supports Swagger 1.2, you do not need to call this method ' +
+          'for Swagger >= 2.0 definitions.'
         )
       end
 
@@ -240,7 +240,7 @@ module Swagger
           end
         end
         return result if !name
-        # If "name" is given to this node, wrap the data with a root element with the given name.
+        # If 'name' is given to this node, wrap the data with a root element with the given name.
         {name => result}
       end
 
@@ -472,13 +472,12 @@ module Swagger
 
     # v2.0: https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#path-item-object
     class PathNode < Node
-      # TODO support ^x- Vendor Extensions
+      OPERATION_TYPES = [:get, :put, :post, :delete, :options, :head, :patch].freeze
 
+      # TODO support ^x- Vendor Extensions
       def operation(op, &block)
         op = op.to_sym
-        # TODO proper exception class
-        raise "Invalid operation" unless [:get, :put, :post, :delete,
-          :options, :head, :patch].include?(op)
+        raise ArgumentError.new("#{name} not in #{OPERATION_TYPES}") if !OPERATION_TYPES.include?(op)
         self.data[op] = Swagger::Blocks::OperationNode.call(version: version, &block)
       end
     end
@@ -618,7 +617,7 @@ module Swagger
           end
         end
         return result if !name
-        # If "name" is given to this node, wrap the data with a root element with the given name.
+        # If 'name' is given to this node, wrap the data with a root element with the given name.
         {name => result}
       end
 
