@@ -230,9 +230,11 @@ module Swagger
           elsif value.is_a?(Array)
             result[key] = []
             value.each { |v| result[key] << (v.respond_to?(:as_json) ? v.as_json : v) }
-          elsif value.is_a?(Hash) && is_swagger_2_0?
+          elsif is_swagger_2_0? && value.is_a?(Hash)
             result[key] = {}
             value.each_pair {|k, v| result[key][k] = (v.respond_to?(:as_json) ? v.as_json : v) }
+          elsif is_swagger_2_0? && key.to_s.eql?('$ref') && (value.to_s !~ %r{^#/definitions/})
+            result[key] = "#/definitions/#{value}"
           else
             result[key] = value
           end
@@ -641,7 +643,7 @@ module Swagger
             r = []
             value.each { |v| r << (v.respond_to?(:as_json) ? v.as_json : v) }
             result << r
-          elsif value.is_a?(Hash) && is_swagger_2_0?
+          elsif is_swagger_2_0? && value.is_a?(Hash)
             r = {}
             value.each_pair {|k, v| r[k] = (v.respond_to?(:as_json) ? v.as_json : v) }
             result << r

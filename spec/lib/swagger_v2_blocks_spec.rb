@@ -64,14 +64,14 @@ class PetControllerV2
         schema do
           key :type, :array
           items do
-            key :"$ref", "#/definitions/pet" # TODO reference by definition name
+            key :"$ref", :pet
           end
         end
       end
       response('default') do
         key :description, "unexpected error"
         schema do
-          key :"$ref", "#/definitions/errorModel"  # TODO reference by definition name
+          key :"$ref", :errorModel
         end
       end
     end
@@ -87,19 +87,19 @@ class PetControllerV2
         key :description, "Pet to add to the store"
         key :required, true
         schema do
-          key :"$ref", "#/definitions/petInput" # TODO reference by definition name
+          key :"$ref", :petInput
         end
       end
       response('200') do
         key :description, "pet response"
         schema do
-          key :"$ref", "#/definitions/pet" # TODO reference by definition name
+          key :"$ref", :pet
         end
       end
       response('default') do
         key :description, "unexpected error"
         schema do
-          key :"$ref", "#/definitions/errorModel"  # TODO reference by definition name
+          key :"$ref", :errorModel
         end
       end
     end
@@ -126,13 +126,13 @@ class PetControllerV2
       response('200') do
         key :description, "pet response"
         schema do
-          key :"$ref", "#/definitions/pet" # TODO reference by definition name
+          key :"$ref", :pet
         end
       end
       response('default') do
         key :description, "unexpected error"
         schema do
-          key :"$ref", "#/definitions/errorModel"  # TODO reference by definition name
+          key :"$ref", :errorModel
         end
       end
     end
@@ -153,7 +153,7 @@ class PetControllerV2
       response('default') do
         key :description, "unexpected error"
         schema do
-          key :"$ref", "#/definitions/errorModel"  # TODO reference by definition name
+          key :"$ref", :errorModel
         end
       end
     end
