@@ -3,7 +3,7 @@ require 'swagger/blocks'
 
 # TODO Test data originally based on the Swagger UI example data
 
-RESOURCE_LISTING_JSON_V2 = open(File.expand_path('../swagger_v2_partial.json', __FILE__)).read
+RESOURCE_LISTING_JSON_V2 = open(File.expand_path('../swagger_v2_api_declaration.json', __FILE__)).read
 
 class PetControllerV2
   include Swagger::Blocks
@@ -75,6 +75,88 @@ class PetControllerV2
         end
       end
     end
+    operation('post') do
+      key :description, "Creates a new pet in the store.  Duplicates are allowed"
+      key :operationId, 'addPet'
+      key :produces, [
+        "application/json"
+      ]
+      parameter do
+        key :name, :pet
+        key :in, :body
+        key :description, "Pet to add to the store"
+        key :required, true
+        schema do
+          key :"$ref", "#/definitions/petInput" # TODO reference by definition name
+        end
+      end
+      response('200') do
+        key :description, "pet response"
+        schema do
+          key :"$ref", "#/definitions/pet" # TODO reference by definition name
+        end
+      end
+      response('default') do
+        key :description, "unexpected error"
+        schema do
+          key :"$ref", "#/definitions/errorModel"  # TODO reference by definition name
+        end
+      end
+    end
+  end
+
+  swagger_path('/pets/{id}') do
+    operation('get') do
+      key :description, "Returns a user based on a single ID, if the user does not have access to the pet"
+      key :operationId, 'findPetById'
+      key :produces, [
+        "application/json",
+        "application/xml",
+        "text/xml",
+        "text/html"
+      ]
+      parameter do
+        key :name, :id
+        key :in, :path
+        key :description, "ID of pet to fetch"
+        key :required, true
+        key :type, :integer
+        key :format, :int64
+      end
+      response('200') do
+        key :description, "pet response"
+        schema do
+          key :"$ref", "#/definitions/pet" # TODO reference by definition name
+        end
+      end
+      response('default') do
+        key :description, "unexpected error"
+        schema do
+          key :"$ref", "#/definitions/errorModel"  # TODO reference by definition name
+        end
+      end
+    end
+    operation('delete') do
+      key :description, "deletes a single pet based on the ID supplied"
+      key :operationId, 'deletePet'
+      parameter do
+        key :name, :id
+        key :in, :path
+        key :description, "ID of pet to delete"
+        key :required, true
+        key :type, :integer
+        key :format, :int64
+      end
+      response('204') do
+        key :description, "pet deleted"
+      end
+      response('default') do
+        key :description, "unexpected error"
+        schema do
+          key :"$ref", "#/definitions/errorModel"  # TODO reference by definition name
+        end
+      end
+    end
   end
 
 end
@@ -82,7 +164,7 @@ end
 class PetV2
   include Swagger::Blocks
 
-  swagger_definition(:pet) do
+  swagger_schema(:pet) do
     key :required, [:id, :name]
     property :id do
       key :type, :integer
@@ -96,14 +178,26 @@ class PetV2
     end
   end
 
-  # TODO JSON-Schema 'allOf' and similar
-
+  swagger_schema(:petInput) do
+    allOf do
+      schema do
+        key :"$ref", :pet
+      end
+      schema do
+        key :required, [:name]
+        property :id do
+          key :type, :integer
+          key :format, :int64
+        end
+      end
+    end
+  end
 end
 
 class ErrorModelV2
   include Swagger::Blocks
 
-  swagger_definition(:errorModel) do
+  swagger_schema(:errorModel) do
     key :required, [:code, :message]
     property :code do
       key :type, :integer

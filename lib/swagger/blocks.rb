@@ -20,8 +20,8 @@ module Swagger
 
       if data[:root_node].is_swagger_2_0?
         data[:root_node].key(:paths, data[:path_nodes]) # Required, so no empty check.
-        if data[:definition_nodes] && !data[:definition_nodes].empty?
-          data[:root_node].key(:definitions, data[:definition_nodes])
+        if data[:schema_nodes] && !data[:schema_nodes].empty?
+          data[:root_node].key(:definitions, data[:schema_nodes])
         end
       end
 
@@ -58,7 +58,7 @@ module Swagger
         models_nodes = []
 
         path_node_map = {}
-        definition_node_map = {}
+        schema_node_map = {}
         swaggered_classes.each do |swaggered_class|
           next unless swaggered_class.respond_to?(:_swagger_nodes, true)
           swagger_nodes = swaggered_class.send(:_swagger_nodes)
@@ -69,8 +69,8 @@ module Swagger
           if swagger_nodes[:path_node_map]
             path_node_map.merge!(swagger_nodes[:path_node_map])
           end
-          if swagger_nodes[:definition_node_map]
-            definition_node_map.merge!(swagger_nodes[:definition_node_map])
+          if swagger_nodes[:schema_node_map]
+            schema_node_map.merge!(swagger_nodes[:schema_node_map])
           end
 
           # 1.2
@@ -84,7 +84,7 @@ module Swagger
         data = {root_node: self.limit_root_node(root_nodes)}
         if data[:root_node].is_swagger_2_0?
           data[:path_nodes] = path_node_map
-          data[:definition_nodes] = definition_node_map
+          data[:schema_nodes] = schema_node_map
         else
           data[:api_node_map] = api_node_map
           data[:models_nodes] = models_nodes
@@ -174,16 +174,16 @@ module Swagger
       # v2.0: Defines a Swagger Definition Schema,
       # v2.0: https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#definitionsObject and
       # v2.0: https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#schema-object
-      def swagger_definition(name, &block)
-        @swagger_definition_node_map ||= {}
+      def swagger_schema(name, &block)
+        @swagger_schema_node_map ||= {}
 
-        definition_node = @swagger_definition_node_map[name]
-        if definition_node
-          # Merge this definition_node declaration into the previous one
-          definition_node.instance_eval(&block)
+        schema_node = @swagger_schema_node_map[name]
+        if schema_node
+          # Merge this schema_node declaration into the previous one
+          schema_node.instance_eval(&block)
         else
-          # First time we've seen this definition_node
-          @swagger_definition_node_map[name] = Swagger::Blocks::DefinitionNode.call(version: '2.0', &block)
+          # First time we've seen this schema_node
+          @swagger_schema_node_map[name] = Swagger::Blocks::SchemaNode.call(version: '2.0', &block)
         end
       end
 
@@ -191,13 +191,13 @@ module Swagger
         # Avoid initialization warnings.
         @swagger_root_node ||= nil
         @swagger_path_node_map ||= {}
-        @swagger_definition_node_map ||= nil
+        @swagger_schema_node_map ||= nil
         @swagger_api_root_node_map ||= {}
         @swagger_models_node ||= nil
 
         data = {root_node: @swagger_root_node}
         data[:path_node_map] = @swagger_path_node_map
-        data[:definition_node_map] = @swagger_definition_node_map
+        data[:schema_node_map] = @swagger_schema_node_map
         data[:api_node_map] = @swagger_api_root_node_map
         data[:models_node] = @swagger_models_node
         data
@@ -223,6 +223,7 @@ module Swagger
 
       def as_json
         result = {}
+
         self.data.each do |key, value|
           if value.is_a?(Node)
             result[key] = value.as_json
@@ -334,11 +335,11 @@ module Swagger
 
         self.data[:definitions] ||= {}
 
-        temp_def_node = Swagger::Blocks::DefinitionNode.call(version: version, &block)
+        temp_def_node = Swagger::Blocks::SchemaNode.call(version: version, &block)
         def_node = self.data[:definitions][path_str]
 
         if def_node
-          # Merge this block with the previous DefinitionNode by the same key.
+          # Merge this block with the previous SchemaNode by the same key.
           def_node.instance_eval(&block)
         else
           # First time we've seen a definition block with the given key.
@@ -629,15 +630,58 @@ module Swagger
       end
     end
 
+    class AllOfNode < Node
+      def as_json
+        result = []
+
+        self.data.each do |value|
+          if value.is_a?(Node)
+            result << value.as_json
+          elsif value.is_a?(Array)
+            r = []
+            value.each { |v| r << (v.respond_to?(:as_json) ? v.as_json : v) }
+            result << r
+          elsif value.is_a?(Hash) && is_swagger_2_0?
+            r = {}
+            value.each_pair {|k, v| r[k] = (v.respond_to?(:as_json) ? v.as_json : v) }
+            result << r
+          else
+            result = value
+          end
+        end
+        return result if !name
+        # If "name" is given to this node, wrap the data with a root element with the given name.
+        {name => result}
+      end
+
+      def data
+        @data ||= []
+      end
+
+      def key(key, value)
+        raise NotSupportedError
+      end
+
+      def schema(&block)
+        data << Swagger::Blocks::SchemaNode.call(version: version, &block)
+      end
+    end
+
     # v2.0: https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#schema-object
     class SchemaNode < Node
       def items(&block)
         self.data[:items] = Swagger::Blocks::ItemsNode.call(version: version, &block)
       end
 
-      # TODO allOf
+      def allOf(&block)
+        self.data[:allOf] = Swagger::Blocks::AllOfNode.call(version: version, &block)
+      end
 
-      # TODO properties
+      def property(name, &block)
+        self.data[:properties] ||= Swagger::Blocks::PropertiesNode.new
+        self.data[:properties].version = version
+        self.data[:properties].property(name, &block)
+      end
 
       def xml(&block)
         self.data[:xml] = Swagger::Blocks::XmlNode.call(version: version, &block)
@@ -646,7 +690,6 @@ module Swagger
       def externalDocs(&block)
         self.data[:externalDocs] = Swagger::Blocks::ExternalDocsNode.call(version: version, &block)
       end
-
     end
 
     # v2.0: https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#headerObject
@@ -689,15 +732,6 @@ module Swagger
 
       def externalDocs(&block)
         self.data[:externalDocs] = Swagger::Blocks::ExternalDocsNode.call(version: version, &block)
-      end
-    end
-
-    # v2.0:
-    class DefinitionNode < Node
-      def property(name, &block)
-        self.data[:properties] ||= Swagger::Blocks::PropertiesNode.new
-        self.data[:properties].version = version
-        self.data[:properties].property(name, &block)
       end
     end
 
