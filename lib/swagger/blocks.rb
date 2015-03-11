@@ -315,40 +315,6 @@ module Swagger
         self.data[:parameters][param] = Swagger::Blocks::ParameterNode.call(version: version, &block)
       end
 
-      def path(pth, &block)
-        raise NotSupportedError unless is_swagger_2_0?
-
-        self.data[:paths] ||= {}
-
-        temp_path_node = Swagger::Blocks::PathNode.call(version: version, &block)
-        path_node = self.data[:paths][path_str]
-
-        if path_node
-          # Merge this block with the previous PathNode by the same path key.
-          path_node.instance_eval(&block)
-        else
-          # First time we've seen a path block with the given path key.
-          self.data[:paths][path_str] = temp_path_node
-        end
-      end
-
-      def definition(name, &block)
-        raise NotSupportedError unless is_swagger_2_0?
-
-        self.data[:definitions] ||= {}
-
-        temp_def_node = Swagger::Blocks::SchemaNode.call(version: version, &block)
-        def_node = self.data[:definitions][path_str]
-
-        if def_node
-          # Merge this block with the previous SchemaNode by the same key.
-          def_node.instance_eval(&block)
-        else
-          # First time we've seen a definition block with the given key.
-          self.data[:definitions][name] = temp_def_node
-        end
-      end
-
       def response(resp, &block)
         raise NotSupportedError unless is_swagger_2_0?
 
