@@ -336,6 +336,13 @@ module Swagger
         self.data[:security] ||= []
         self.data[:security] << Swagger::Blocks::SecurityRequirementNode.call(version: version, &block)
       end
+
+      def tags(&block)
+        raise NotSupportedError unless is_swagger_2_0?
+
+        self.data[:tags] ||= []
+        self.data[:tags] << Swagger::Blocks::TagNode.call(version: version, &block)
+      end
     end
 
     # v1.2: http://goo.gl/PvwUXj#512-resource-object
@@ -510,6 +517,13 @@ module Swagger
         raise NotSupportedError unless is_swagger_1_2?
 
         self.data[:items] = Swagger::Blocks::ItemsNode.call(version: version, &block)
+      end
+
+      def tags(&block)
+        raise NotSupportedError unless is_swagger_2_0?
+
+        self.data[:tags] ||= {}
+        self.data[:tags] = Swagger::Blocks::TagNode.call(version: version, &block)
       end
 
       def response(resp, &block)
