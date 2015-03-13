@@ -23,6 +23,16 @@
   "produces": [
     "application/json"
   ],
+  "tags": [
+    {
+      "name": "pet",
+      "description": "Pets operations",
+      "externalDocs": {
+        "description": "Find more info here",
+        "url": "https://swagger.io"
+      }
+    }
+  ],
   "paths": {
     "/pets": {
       "get": {

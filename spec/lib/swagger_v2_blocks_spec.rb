@@ -28,6 +28,14 @@ class PetControllerV2
     key :schemes, ['http']
     key :consumes, ['application/json']
     key :produces, ['application/json']
+    tags do
+      key :name, 'pet'
+      key :description, 'Pets operations'
+      externalDocs do
+        key :description, 'Find more info here'
+        key :url, 'https://swagger.io'
+      end
+    end
   end
 
   swagger_path '/pets' do
