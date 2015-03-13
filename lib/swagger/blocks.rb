@@ -519,13 +519,6 @@ module Swagger
         self.data[:items] = Swagger::Blocks::ItemsNode.call(version: version, &block)
       end
 
-      def tags(&block)
-        raise NotSupportedError unless is_swagger_2_0?
-
-        self.data[:tags] ||= {}
-        self.data[:tags] = Swagger::Blocks::TagNode.call(version: version, &block)
-      end
-
       def response(resp, &block)
         raise NotSupportedError unless is_swagger_2_0?
 
