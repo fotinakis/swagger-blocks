@@ -261,6 +261,15 @@ That is the only line necessary to build the full [root Swagger object](https://
 
 Now, simply point Swagger UI at `/apidocs` and everything should Just Work™. If you change any of the Swagger block definitions, you can simply refresh Swagger UI to see the changes.
 
+#### Writing JSON to a file
+
+If you are not serving the JSON directly and need to write it to a file for some reason, you can easily use `build_root_json` for that as well:
+
+```Ruby
+swagger_data = Swagger::Blocks.build_root_json(SWAGGERED_CLASSES)
+File.open('swagger.json', 'w') { |file| file.write(swagger_data.to_json) }
+```
+
 ### Swagger 1.2 example (Rails)
 
 See the [v1.2 docs](https://github.com/fotinakis/swagger-blocks/blob/master/README_v1_2.md).
