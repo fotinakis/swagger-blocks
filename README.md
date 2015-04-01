@@ -45,6 +45,9 @@ class PetsController < ActionController::Base
     operation :get do
       key :description, 'Returns a single pet if the user has access'
       key :operationId, 'findPetById'
+      key :tags, [
+        'pet'
+      ]
       parameter do
         key :name, :id
         key :in, :path
@@ -74,6 +77,9 @@ class PetsController < ActionController::Base
       key :produces, [
         'application/json',
         'text/html',
+      ]
+      key :tags, [
+        'pet'
       ]
       parameter do
         key :name, :tags
@@ -115,6 +121,9 @@ class PetsController < ActionController::Base
       key :operationId, 'addPet'
       key :produces, [
         'application/json'
+      ]
+      key :tags, [
+        'pet'
       ]
       parameter do
         key :name, :pet
@@ -229,6 +238,14 @@ class ApidocsController < ActionController::Base
       end
       license do
         key :name, 'MIT'
+      end
+    end
+    tags do
+      key :name, 'pet'
+      key :description, 'Pets operations'
+      externalDocs do
+        key :description, 'Find more info here'
+        key :url, 'https://swagger.io'
       end
     end
     key :host, 'petstore.swagger.wordnik.com'
