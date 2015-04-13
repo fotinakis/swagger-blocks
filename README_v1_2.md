@@ -1,5 +1,7 @@
 # Swagger 1.2 example (Rails)
 
+**NOTE: this is old, you probably want to [use the latest syntax](https://github.com/fotinakis/swagger-blocks).**
+
 This is a simplified example based on the objects in the Petstore [Swagger Sample App](http://petstore.swagger.wordnik.com/#!/pet). For a more complex and complete example, see the [swagger_blocks_spec.rb](https://github.com/fotinakis/swagger-blocks/blob/master/spec/lib/swagger_blocks_spec.rb) file.
 
 Also note that Rails is not required, you can use Swagger::Blocks with any Ruby web framework.
