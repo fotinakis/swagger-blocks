@@ -278,6 +278,51 @@ That is the only line necessary to build the full [root Swagger object](https://
 
 Now, simply point Swagger UI at `/apidocs` and everything should Just Work™. If you change any of the Swagger block definitions, you can simply refresh Swagger UI to see the changes.
 
+#### Security handling
+
+To support Swagger's definitions for API key auth or OAuth2, use `security_definition` in your `swagger_root`:
+
+```Ruby
+  swagger_root do
+    key :swagger, '2.0'
+
+    # ...
+
+    security_definition :api_key do
+      key :type, :apiKey
+      key :name, :api_key
+      key :in, :header
+    end
+    security_definition :petstore_auth do
+      key :type, :oauth2
+      key :authorizationUrl, 'http://swagger.io/api/oauth/dialog'
+      key :flow, :implicit
+      scopes do
+        key 'write:pets', 'modify pets in your account'
+        key 'read:pets', 'read your pets'
+      end
+    end
+  end
+```
+
+You can then apply [security requirement objects](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#securityRequirementObject) to the entire `swagger_root`, or to individual operations:
+
+```Ruby
+  swagger_path '/pets/{id}' do
+    operation :get do
+
+      # ...
+
+      security do
+        key :api_key, []
+      end
+      security do
+        key :petstore_auth, ['write:pets', 'read:pets']
+      end
+    end
+  end
+```
+
 #### Writing JSON to a file
 
 If you are not serving the JSON directly and need to write it to a file for some reason, you can easily use `build_root_json` for that as well:
