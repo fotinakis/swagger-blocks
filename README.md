@@ -278,7 +278,7 @@ That is the only line necessary to build the full [root Swagger object](https://
 
 Now, simply point Swagger UI at `/apidocs` and everything should Just Work™. If you change any of the Swagger block definitions, you can simply refresh Swagger UI to see the changes.
 
-#### Security handling
+### Security handling
 
 To support Swagger's definitions for API key auth or OAuth2, use `security_definition` in your `swagger_root`:
 
