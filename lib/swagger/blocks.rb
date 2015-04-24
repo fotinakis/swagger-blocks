@@ -400,6 +400,9 @@ module Swagger
     # v1.2: http://goo.gl/PvwUXj#516-scope-object
     class ScopeNode < Node; end
 
+    # v2.0: https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#scopes-object
+    class ScopesNode < Node; end
+
     # v1.2: http://goo.gl/PvwUXj#517-grant-types-object
     class GrantTypesNode < Node
       def implicit(&block)
@@ -551,9 +554,8 @@ module Swagger
     class SecuritySchemeNode < Node
       # TODO support ^x- Vendor Extensions
 
-      def scope(name, description)
-        self.data[:scopes] ||= {}
-        self.data[:scopes][name] = description
+      def scopes(&block)
+        self.data[:scopes] = Swagger::Blocks::ScopesNode.call(version: version, &block)
       end
     end
 

@@ -28,6 +28,20 @@ class PetControllerV2
     key :schemes, ['http']
     key :consumes, ['application/json']
     key :produces, ['application/json']
+    security_definition :api_key do
+      key :type, :apiKey
+      key :name, :api_key
+      key :in, :header
+    end
+    security_definition :petstore_auth do
+      key :type, :oauth2
+      key :authorizationUrl, 'http://swagger.io/api/oauth/dialog'
+      key :flow, :implicit
+      scopes do
+        key 'write:pets', 'modify pets in your account'
+        key 'read:pets', 'read your pets'
+      end
+    end
     tags do
       key :name, 'pet'
       key :description, 'Pets operations'
@@ -143,6 +157,12 @@ class PetControllerV2
           key :'$ref', :ErrorModel
         end
       end
+      security do
+        key :api_key, []
+      end
+      security do
+        key :petstore_auth, ['write:pets', 'read:pets']
+      end
     end
     operation :delete do
       key :description, 'deletes a single pet based on the ID supplied'
@@ -234,6 +254,9 @@ describe 'Swagger::Blocks v2' do
       expect(actual['paths']).to be
       expect(actual['paths']['/pets']).to be
       expect(actual['paths']['/pets']).to eq(data['paths']['/pets'])
+      expect(actual['paths']['/pets/{id}']).to be
+      expect(actual['paths']['/pets/{id}']['get']).to be
+      expect(actual['paths']['/pets/{id}']['get']).to eq(data['paths']['/pets/{id}']['get'])
       expect(actual['paths']).to eq(data['paths'])
       expect(actual['definitions']).to eq(data['definitions'])
       expect(actual).to eq(data)
