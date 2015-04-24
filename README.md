@@ -11,7 +11,7 @@ It helps you write API docs in the [Swagger](https://helloreverb.com/developers/
 
 * Supports **live updating** by design. Change code, refresh your API docs.
 * **Works with all Ruby web frameworks** including Rails, Sinatra, etc.
-* **100% support** for all features of the [Swagger 1.2](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md) and [Swagger 2.0](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md) specs.
+* **100% support** for all features of the [Swagger 2.0](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md) and [Swagger 1.2](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md) specs.
 * Flexible—you can use Swagger::Blocks anywhere, split up blocks to fit your style preferences, etc. Since it's pure Ruby and serves definitions dynamically, you can easily use initializers/config objects to change values or even **show different APIs based on environment**.
 * 1:1 naming with the Swagger spec—block names and nesting should match almost exactly with the swagger spec, with rare exceptions to make things more convenient.
 
