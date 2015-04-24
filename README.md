@@ -350,6 +350,7 @@ See the [swagger_v2_blocks_spec.rb](https://github.com/fotinakis/swagger-blocks/
 
 ## Release notes
 
+* v1.1.2: Bugfix for security definition support.
 * v1.1.1: Bugfix for tags node support.
 * v1.1: Support for Swagger 2.0 spec.
 * v1.0.1: Make backwards-compatible with Ruby 1.9.3.
