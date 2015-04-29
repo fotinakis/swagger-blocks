@@ -219,8 +219,11 @@
         "name": {
           "type": "string"
         },
-        "tag": {
-          "type": "string"
+        "colors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },

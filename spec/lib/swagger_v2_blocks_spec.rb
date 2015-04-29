@@ -201,8 +201,11 @@ class PetV2
     property :name do
       key :type, :string
     end
-    property :tag do
-      key :type, :string
+    property :colors do
+      key :type, :array
+      items do
+        key :type, :string
+      end
     end
   end
 
