@@ -323,6 +323,14 @@ You can then apply [security requirement objects](https://github.com/swagger-api
   end
 ```
 
+#### Nested complex objects
+
+The `key` block simply takes the value you give and puts it directly into the final JSON object. So, if you need to set more complex objects, you can just do:
+
+```ruby
+  key :foo, {some_complex: {nested_object: true}}
+```
+
 #### Writing JSON to a file
 
 If you are not serving the JSON directly and need to write it to a file for some reason, you can easily use `build_root_json` for that as well:
