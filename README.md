@@ -356,6 +356,8 @@ See the [swagger_v2_blocks_spec.rb](https://github.com/fotinakis/swagger-blocks/
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
 
+Throw a ★ on it! :)
+
 ## Release notes
 
 * v1.1.2: Bugfix for security definition support.
