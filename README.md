@@ -240,7 +240,7 @@ class ApidocsController < ActionController::Base
         key :name, 'MIT'
       end
     end
-    tags do
+    tag do
       key :name, 'pet'
       key :description, 'Pets operations'
       externalDocs do
@@ -360,6 +360,7 @@ Throw a ★ on it! :)
 
 ## Release notes
 
+* v1.1.3: Rename tags directive to tag for consistency.
 * v1.1.2: Bugfix for security definition support.
 * v1.1.1: Bugfix for tags node support.
 * v1.1: Support for Swagger 2.0 spec.

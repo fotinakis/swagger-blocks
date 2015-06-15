@@ -42,7 +42,7 @@ class PetControllerV2
         key 'read:pets', 'read your pets'
       end
     end
-    tags do
+    tag do
       key :name, 'pet'
       key :description, 'Pets operations'
       externalDocs do

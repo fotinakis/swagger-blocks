@@ -337,12 +337,16 @@ module Swagger
         self.data[:security] << Swagger::Blocks::SecurityRequirementNode.call(version: version, &block)
       end
 
-      def tags(&block)
+      def tag(&block)
         raise NotSupportedError unless is_swagger_2_0?
 
         self.data[:tags] ||= []
         self.data[:tags] << Swagger::Blocks::TagNode.call(version: version, &block)
       end
+
+      # Use 'tag' instead.
+      # @deprecated
+      alias_method :tags, :tag
     end
 
     # v1.2: http://goo.gl/PvwUXj#512-resource-object
