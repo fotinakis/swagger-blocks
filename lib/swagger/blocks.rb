@@ -113,8 +113,8 @@ module Swagger
       # v1.2: http://goo.gl/PvwUXj#51-resource-listing
       # v2.0: Defines a Swagger Object
       # v2.0: https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#swagger-object
-      def swagger_root(&block)
-        @swagger_root_node ||= Swagger::Blocks::RootNode.call(&block)
+      def swagger_root(props = {}, &block)
+        @swagger_root_node ||= Swagger::Blocks::RootNode.call({}, props, &block)
       end
 
       # v1.2: Defines a Swagger API Declaration.
@@ -122,7 +122,7 @@ module Swagger
       # v1.2:
       # v1.2: @param resource_name [Symbol] An identifier for this API. All swagger_api_root declarations
       # v1.2:   with the same resource_name will be  into a single API root node.
-      def swagger_api_root(resource_name, &block)
+      def swagger_api_root(resource_name, props = {}, &block)
         resource_name = resource_name.to_sym
 
         # Map of path names to ApiDeclarationNodes.
@@ -136,7 +136,7 @@ module Swagger
           api_node.instance_eval(&block)
         else
           # First time we've seen this `swagger_api_root :resource_name`.
-          api_node = Swagger::Blocks::ApiDeclarationNode.call(version: '1.2', &block)
+          api_node = Swagger::Blocks::ApiDeclarationNode.call({version: '1.2'}, props, &block)
         end
 
         # Add it into the resource_name to node map (may harmlessly overwrite the same object).
@@ -145,7 +145,7 @@ module Swagger
 
       # v2.0: Defines a Swagger Path Item object
       # https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#path-item-object
-      def swagger_path(path, &block)
+      def swagger_path(path, props = {}, &block)
         path = path.to_sym
 
         # TODO enforce that path name begins with a '/'
@@ -159,7 +159,7 @@ module Swagger
           path_node.instance_eval(&block)
         else
           # First time we've seen this path
-          @swagger_path_node_map[path] = Swagger::Blocks::PathNode.call(version: '2.0', &block)
+          @swagger_path_node_map[path] = Swagger::Blocks::PathNode.call({version: '2.0'}, props, &block)
         end
       end
 
@@ -174,7 +174,7 @@ module Swagger
       # v2.0: Defines a Swagger Definition Schema,
       # v2.0: https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#definitionsObject and
       # v2.0: https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#schema-object
-      def swagger_schema(name, &block)
+      def swagger_schema(name, props = {}, &block)
         @swagger_schema_node_map ||= {}
 
         schema_node = @swagger_schema_node_map[name]
@@ -183,7 +183,7 @@ module Swagger
           schema_node.instance_eval(&block)
         else
           # First time we've seen this schema_node
-          @swagger_schema_node_map[name] = Swagger::Blocks::SchemaNode.call(version: '2.0', &block)
+          @swagger_schema_node_map[name] = Swagger::Blocks::SchemaNode.call({version: '2.0'}, props,&block)
         end
       end
 
@@ -212,12 +212,15 @@ module Swagger
       attr_accessor :name
       attr_writer :version
 
-      def self.call(options = {}, &block)
+      def self.call(options = {}, props = {}, &block)
         # Create a new instance and evaluate the block into it.
         instance = new
         instance.name = options[:name] if options[:name]
         instance.version = options[:version]
-        instance.instance_eval(&block)
+        props.each_pair do |k,v|
+          instance.key k, v
+        end
+        instance.instance_eval(&block) if block_given?
         instance
       end
 
@@ -233,7 +236,7 @@ module Swagger
           elsif is_swagger_2_0? && value.is_a?(Hash)
             result[key] = {}
             value.each_pair {|k, v| result[key][k] = (v.respond_to?(:as_json) ? v.as_json : v) }
-          elsif is_swagger_2_0? && key.to_s.eql?('$ref') && (value.to_s !~ %r{^#/definitions/})
+          elsif is_swagger_2_0? && key.to_s.eql?('$ref') && (value.to_s !~ %r{^#/definitions|responses/})
             result[key] = "#/definitions/#{value}"
           else
             result[key] = value
@@ -296,52 +299,52 @@ module Swagger
         self.data[:authorizations].authorization(name, &block)
       end
 
-      def info(&block)
-        self.data[:info] = Swagger::Blocks::InfoNode.call(version: version, &block)
+      def info(props = {}, &block)
+        self.data[:info] = Swagger::Blocks::InfoNode.call({version: version}, props, &block)
       end
 
-      def api(&block)
+      def api(props = {}, &block)
         raise NotSupportedError unless is_swagger_1_2?
 
         self.data[:apis] ||= []
-        self.data[:apis] << Swagger::Blocks::ResourceNode.call(version: version, &block)
+        self.data[:apis] << Swagger::Blocks::ResourceNode.call({version: version}, props, &block)
       end
 
-      def parameter(param, &block)
+      def parameter(param, props = {}, &block)
         raise NotSupportedError unless is_swagger_2_0?
 
         # TODO validate 'param' is as per spec
         self.data[:parameters] ||= {}
-        self.data[:parameters][param] = Swagger::Blocks::ParameterNode.call(version: version, &block)
+        self.data[:parameters][param] = Swagger::Blocks::ParameterNode.call({version: version}, props, &block)
       end
 
-      def response(resp, &block)
+      def response(resp, props = {}, &block)
         raise NotSupportedError unless is_swagger_2_0?
 
         # TODO validate 'resp' is as per spec
         self.data[:responses] ||= {}
-        self.data[:responses][resp] = Swagger::Blocks::ResponseNode.call(version: version, &block)
+        self.data[:responses][resp] = Swagger::Blocks::ResponseNode.call({version: version}, props, &block)
       end
 
-      def security_definition(name, &block)
+      def security_definition(name, props = {}, &block)
         raise NotSupportedError unless is_swagger_2_0?
 
         self.data[:securityDefinitions] ||= {}
-        self.data[:securityDefinitions][name] = Swagger::Blocks::SecuritySchemeNode.call(version: version, &block)
+        self.data[:securityDefinitions][name] = Swagger::Blocks::SecuritySchemeNode.call({version: version}, props, &block)
       end
 
-      def security(&block)
+      def security(props = {}, &block)
         raise NotSupportedError unless is_swagger_2_0?
 
         self.data[:security] ||= []
-        self.data[:security] << Swagger::Blocks::SecurityRequirementNode.call(version: version, &block)
+        self.data[:security] << Swagger::Blocks::SecurityRequirementNode.call({version: version}, props, &block)
       end
 
-      def tag(&block)
+      def tag(props = {}, &block)
         raise NotSupportedError unless is_swagger_2_0?
 
         self.data[:tags] ||= []
-        self.data[:tags] << Swagger::Blocks::TagNode.call(version: version, &block)
+        self.data[:tags] << Swagger::Blocks::TagNode.call({version: version}, props, &block)
       end
 
       # Use 'tag' instead.
@@ -355,8 +358,8 @@ module Swagger
     # v1.2: NOTE: in the spec this is different than API Declaration authorizations.
     # v1.2: http://goo.gl/PvwUXj#514-authorizations-object
     class ResourceListingAuthorizationsNode < Node
-      def authorization(name, &block)
-        self.data[name] = Swagger::Blocks::ResourceListingAuthorizationNode.call(version: version, &block)
+      def authorization(name, props = {}, &block)
+        self.data[name] = Swagger::Blocks::ResourceListingAuthorizationNode.call({version: version}, props, &block)
       end
     end
 
@@ -365,9 +368,9 @@ module Swagger
     class ResourceListingAuthorizationNode < Node
       GRANT_TYPES = [:implicit, :authorization_code].freeze
 
-      def scope(&block)
+      def scope(props = {}, &block)
         self.data[:scopes] ||= []
-        self.data[:scopes] << Swagger::Blocks::ScopeNode.call(version: version, &block)
+        self.data[:scopes] << Swagger::Blocks::ScopeNode.call({version: version}, props, &block)
       end
 
       def grant_type(name, &block)
@@ -382,16 +385,16 @@ module Swagger
     # v1.2: http://goo.gl/PvwUXj#513-info-object
     # v2.0: https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#infoObject
     class InfoNode < Node
-      def contact(&block)
+      def contact(props = {}, &block)
         raise NotSupportedError unless is_swagger_2_0?
 
-        self.data[:contact] = Swagger::Blocks::ContactNode.call(version: version, &block)
+        self.data[:contact] = Swagger::Blocks::ContactNode.call({version: version}, props, &block)
       end
 
-      def license(&block)
+      def license(props = {}, &block)
         raise NotSupportedError unless is_swagger_2_0?
 
-        self.data[:license] = Swagger::Blocks::LicenseNode.call(version: version, &block)
+        self.data[:license] = Swagger::Blocks::LicenseNode.call({version: version}, props, &block)
       end
     end
 
@@ -409,19 +412,19 @@ module Swagger
 
     # v1.2: http://goo.gl/PvwUXj#517-grant-types-object
     class GrantTypesNode < Node
-      def implicit(&block)
-        self.data[:implicit] = Swagger::Blocks::ImplicitNode.call(version: version, &block)
+      def implicit(props = {}, &block)
+        self.data[:implicit] = Swagger::Blocks::ImplicitNode.call({version: version}, props, &block)
       end
 
-      def authorization_code(&block)
-        self.data[:authorization_code] = Swagger::Blocks::AuthorizationCodeNode.call(version: version, &block)
+      def authorization_code(props = {}, &block)
+        self.data[:authorization_code] = Swagger::Blocks::AuthorizationCodeNode.call({version: version}, props, &block)
       end
     end
 
     # v1.2: http://goo.gl/PvwUXj#518-implicit-object
     class ImplicitNode < Node
-      def login_endpoint(&block)
-        self.data[:loginEndpoint] = Swagger::Blocks::LoginEndpointNode.call(version: version, &block)
+      def login_endpoint(props = {}, &block)
+        self.data[:loginEndpoint] = Swagger::Blocks::LoginEndpointNode.call({version: version}, props, &block)
       end
     end
 
@@ -430,12 +433,12 @@ module Swagger
 
     # v1.2: http://goo.gl/PvwUXj#519-authorization-code-object
     class AuthorizationCodeNode < Node
-      def token_request_endpoint(&block)
-        self.data[:tokenRequestEndpoint] = Swagger::Blocks::TokenRequestEndpointNode.call(version: version, &block)
+      def token_request_endpoint(props = {}, &block)
+        self.data[:tokenRequestEndpoint] = Swagger::Blocks::TokenRequestEndpointNode.call({version: version}, props, &block)
       end
 
-      def token_endpoint(&block)
-        self.data[:tokenEndpoint] = Swagger::Blocks::TokenEndpointNode.call(version: version, &block)
+      def token_endpoint(props = {}, &block)
+        self.data[:tokenEndpoint] = Swagger::Blocks::TokenEndpointNode.call({version: version}, props, &block)
       end
     end
 
@@ -451,7 +454,7 @@ module Swagger
 
     # v1.2: http://goo.gl/PvwUXj#52-api-declaration
     class ApiDeclarationNode < Node
-      def api(&block)
+      def api(props = {}, &block)
         self.data[:apis] ||= []
 
         # Important: to conform with the Swagger spec, merge with any previous API declarations
@@ -461,7 +464,7 @@ module Swagger
         # http://goo.gl/PvwUXj#522-api-object
         # - The API Object describes one or more operations on a single path. In the apis array,
         #   there MUST be only one API Object per path.
-        temp_api_node = Swagger::Blocks::ApiNode.call(version: version, &block)
+        temp_api_node = Swagger::Blocks::ApiNode.call({version: version}, props, &block)
         api_node = self.data[:apis].select do |api|
           api.data[:path] == temp_api_node.data[:path]
         end[0]  # Embrace Ruby wtfs.
@@ -478,9 +481,9 @@ module Swagger
 
     # v1.2: http://goo.gl/PvwUXj#522-api-object
     class ApiNode < Node
-      def operation(&block)
+      def operation(props = {}, &block)
         self.data[:operations] ||= []
-        self.data[:operations] << Swagger::Blocks::OperationNode.call(version: version, &block)
+        self.data[:operations] << Swagger::Blocks::OperationNode.call({version: version}, props, &block)
       end
     end
 
@@ -489,10 +492,10 @@ module Swagger
       OPERATION_TYPES = [:get, :put, :post, :delete, :options, :head, :patch].freeze
 
       # TODO support ^x- Vendor Extensions
-      def operation(op, &block)
+      def operation(op, props = {}, &block)
         op = op.to_sym
         raise ArgumentError.new("#{name} not in #{OPERATION_TYPES}") if !OPERATION_TYPES.include?(op)
-        self.data[op] = Swagger::Blocks::OperationNode.call(version: version, &block)
+        self.data[op] = Swagger::Blocks::OperationNode.call({version: version}, props, &block)
       end
     end
 
@@ -500,51 +503,51 @@ module Swagger
     # v2.0: https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#operation-object
     class OperationNode < Node
 
-      def parameter(&block)
+      def parameter(props = {}, &block)
         self.data[:parameters] ||= []
-        self.data[:parameters] << Swagger::Blocks::ParameterNode.call(version: version, &block)
+        self.data[:parameters] << Swagger::Blocks::ParameterNode.call({version: version}, props, &block)
       end
 
-      def response_message(&block)
+      def response_message(props = {}, &block)
         raise NotSupportedError unless is_swagger_1_2?
 
         self.data[:responseMessages] ||= []
-        self.data[:responseMessages] << Swagger::Blocks::Node.call(version: version, &block)
+        self.data[:responseMessages] << Swagger::Blocks::Node.call({version: version}, props, &block)
       end
 
-      def authorization(name, &block)
+      def authorization(name, props = {}, &block)
         raise NotSupportedError unless is_swagger_1_2?
 
         self.data[:authorizations] ||= Swagger::Blocks::ApiAuthorizationsNode.new
         self.data[:authorizations].version = version
-        self.data[:authorizations].authorization(name, &block)
+        self.data[:authorizations].authorization(name, props, &block)
       end
 
-      def items(&block)
+      def items(props = {}, &block)
         raise NotSupportedError unless is_swagger_1_2?
 
-        self.data[:items] = Swagger::Blocks::ItemsNode.call(version: version, &block)
+        self.data[:items] = Swagger::Blocks::ItemsNode.call({version: version}, props, &block)
       end
 
-      def response(resp, &block)
+      def response(resp, props = {}, &block)
         raise NotSupportedError unless is_swagger_2_0?
 
         # TODO validate 'resp' is as per spec
         self.data[:responses] ||= {}
-        self.data[:responses][resp] = Swagger::Blocks::ResponseNode.call(version: version, &block)
+        self.data[:responses][resp] = Swagger::Blocks::ResponseNode.call({version: version}, props, &block)
       end
 
-      def externalDocs(&block)
+      def externalDocs(props = {}, &block)
         raise NotSupportedError unless is_swagger_2_0?
 
-        self.data[:externalDocs] = Swagger::Blocks::ExternalDocsNode.call(version: version, &block)
+        self.data[:externalDocs] = Swagger::Blocks::ExternalDocsNode.call({version: version}, &block)
       end
 
-      def security(&block)
+      def security(props = {}, &block)
         raise NotSupportedError unless is_swagger_2_0?
 
         self.data[:security] ||= []
-        self.data[:security] << Swagger::Blocks::SecurityRequirementNode.call(version: version, &block)
+        self.data[:security] << Swagger::Blocks::SecurityRequirementNode.call({version: version}, props, &block)
       end
     end
 
@@ -558,16 +561,16 @@ module Swagger
     class SecuritySchemeNode < Node
       # TODO support ^x- Vendor Extensions
 
-      def scopes(&block)
-        self.data[:scopes] = Swagger::Blocks::ScopesNode.call(version: version, &block)
+      def scopes(props = {}, &block)
+        self.data[:scopes] = Swagger::Blocks::ScopesNode.call({version: version}, props, &block)
       end
     end
 
     # v1.2: NOTE: in the spec this is different than Resource Listing's authorizations.
     # v1.2: http://goo.gl/PvwUXj#514-authorizations-object
     class ApiAuthorizationsNode < Node
-      def authorization(name, &block)
-        self.data[name] ||= Swagger::Blocks::ApiAuthorizationNode.call(version: version, &block)
+      def authorization(name, props = {}, &block)
+        self.data[name] ||= Swagger::Blocks::ApiAuthorizationNode.call({version: version}, props, &block)
       end
     end
 
@@ -581,9 +584,9 @@ module Swagger
         self.data[:_scopes].map { |s| s.as_json }
       end
 
-      def scope(&block)
+      def scope(props = {}, &block)
         self.data[:_scopes] ||= []
-        self.data[:_scopes] << Swagger::Blocks::ApiAuthorizationScopeNode.call(version: version, &block)
+        self.data[:_scopes] << Swagger::Blocks::ApiAuthorizationScopeNode.call({version: version}, props, &block)
       end
     end
 
@@ -593,20 +596,20 @@ module Swagger
 
     # v2.0: https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#responseObject
     class ResponseNode < Node
-      def schema(&block)
-        self.data[:schema] = Swagger::Blocks::SchemaNode.call(version: version, &block)
+      def schema(props = {}, &block)
+        self.data[:schema] = Swagger::Blocks::SchemaNode.call({version: version}, props, &block)
       end
 
-      def header(head, &block)
+      def header(head, props = {}, &block)
         # TODO validate 'head' is as per spec
         self.data[:headers] ||= {}
-        self.data[:headers][head] = Swagger::Blocks::HeaderNode.call(version: version, &block)
+        self.data[:headers][head] = Swagger::Blocks::HeaderNode.call({version: version}, props, &block)
       end
 
-      def example(exam, &block)
+      def example(exam, props = {}, &block)
         # TODO validate 'exam' is as per spec
         self.data[:examples] ||= {}
-        self.data[:examples][exam] = Swagger::Blocks::ExampleNode.call(version: version, &block)
+        self.data[:examples][exam] = Swagger::Blocks::ExampleNode.call({version: version}, props, &block)
       end
     end
 
@@ -642,40 +645,40 @@ module Swagger
         raise NotSupportedError
       end
 
-      def schema(&block)
-        data << Swagger::Blocks::SchemaNode.call(version: version, &block)
+      def schema(props = {}, &block)
+        data << Swagger::Blocks::SchemaNode.call({version: version}, props, &block)
       end
     end
 
     # v2.0: https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#schema-object
     class SchemaNode < Node
-      def items(&block)
-        self.data[:items] = Swagger::Blocks::ItemsNode.call(version: version, &block)
+      def items(props = {}, &block)
+        self.data[:items] = Swagger::Blocks::ItemsNode.call({version: version}, props, &block)
       end
 
-      def allOf(&block)
-        self.data[:allOf] = Swagger::Blocks::AllOfNode.call(version: version, &block)
+      def allOf(props = {}, &block)
+        self.data[:allOf] = Swagger::Blocks::AllOfNode.call({version: version}, props, &block)
       end
 
-      def property(name, &block)
+      def property(name, props = {}, &block)
         self.data[:properties] ||= Swagger::Blocks::PropertiesNode.new
         self.data[:properties].version = version
-        self.data[:properties].property(name, &block)
+        self.data[:properties].property(name, props, &block)
       end
 
-      def xml(&block)
-        self.data[:xml] = Swagger::Blocks::XmlNode.call(version: version, &block)
+      def xml(props = {}, &block)
+        self.data[:xml] = Swagger::Blocks::XmlNode.call({version: version}, props, &block)
       end
 
-      def externalDocs(&block)
-        self.data[:externalDocs] = Swagger::Blocks::ExternalDocsNode.call(version: version, &block)
+      def externalDocs(props = {}, &block)
+        self.data[:externalDocs] = Swagger::Blocks::ExternalDocsNode.call({version: version}, props, &block)
       end
     end
 
     # v2.0: https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#headerObject
     class HeaderNode < Node
-      def items(&block)
-        self.data[:items] = Swagger::Blocks::ItemsNode.call(version: version, &block)
+      def items(props = {}, &block)
+        self.data[:items] = Swagger::Blocks::ItemsNode.call({version: version}, props, &block)
       end
     end
 
@@ -692,16 +695,16 @@ module Swagger
     # v1.2: http://goo.gl/PvwUXj#524-parameter-object
     # v2.0: https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#parameter-object
     class ParameterNode < Node
-      def schema(&block)
+      def schema(props = {}, &block)
         raise NotSupportedError unless is_swagger_2_0?
 
-        self.data[:schema] = Swagger::Blocks::SchemaNode.call(version: version, &block)
+        self.data[:schema] = Swagger::Blocks::SchemaNode.call({version: version}, props, &block)
       end
 
-      def items(&block)
+      def items(props = {}, &block)
         raise NotSupportedError unless is_swagger_2_0?
 
-        self.data[:items] = Swagger::Blocks::ItemsNode.call(version: version, &block)
+        self.data[:items] = Swagger::Blocks::ItemsNode.call({version: version}, props, &block)
       end
     end
 
@@ -710,8 +713,8 @@ module Swagger
 
       # TODO support ^x- Vendor Extensions
 
-      def externalDocs(&block)
-        self.data[:externalDocs] = Swagger::Blocks::ExternalDocsNode.call(version: version, &block)
+      def externalDocs(props = {}, &block)
+        self.data[:externalDocs] = Swagger::Blocks::ExternalDocsNode.call({version: version}, props, &block)
       end
     end
 
@@ -725,31 +728,31 @@ module Swagger
         self.data.merge!(other_models_node.data)
       end
 
-      def model(name, &block)
-        self.data[name] ||= Swagger::Blocks::ModelNode.call(version: version, &block)
+      def model(name, props = {}, &block)
+        self.data[name] ||= Swagger::Blocks::ModelNode.call({version: version}, props, &block)
       end
     end
 
     # v1.2: http://goo.gl/PvwUXj#527-model-object
     class ModelNode < Node
-      def property(name, &block)
+      def property(name, props = {}, &block)
         self.data[:properties] ||= Swagger::Blocks::PropertiesNode.new
         self.data[:properties].version = version
-        self.data[:properties].property(name, &block)
+        self.data[:properties].property(name, props, &block)
       end
     end
 
     # v1.2: http://goo.gl/PvwUXj#527-model-object
     class PropertiesNode < Node
-      def property(name, &block)
-        self.data[name] = Swagger::Blocks::PropertyNode.call(version: version, &block)
+      def property(name, props = {}, &block)
+        self.data[name] = Swagger::Blocks::PropertyNode.call({version: version}, props, &block)
       end
     end
 
     # v1.2: http://goo.gl/PvwUXj#527-model-object
     class PropertyNode < Node
-      def items(&block)
-        self.data[:items] = Swagger::Blocks::ItemsNode.call(version: version, &block)
+      def items(props = {}, &block)
+        self.data[:items] = Swagger::Blocks::ItemsNode.call({version: version}, props = {}, &block)
       end
     end
   end
