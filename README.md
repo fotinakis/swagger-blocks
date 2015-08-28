@@ -360,6 +360,7 @@ Throw a ★ on it! :)
 
 ## Release notes
 
+* v1.2.0: Improved support for `$ref` Path Item Object parameters.
 * v1.1.3: Rename tags directive to tag for consistency.
 * v1.1.2: Bugfix for security definition support.
 * v1.1.1: Bugfix for tags node support.

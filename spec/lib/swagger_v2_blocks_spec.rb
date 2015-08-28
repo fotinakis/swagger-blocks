@@ -115,7 +115,8 @@ class PetControllerV2
       response 200 do
         key :description, 'pet response'
         schema do
-          key :'$ref', :Pet
+          # Wrong form here, but checks that #/ strings are not transformed.
+          key :'$ref', '#/parameters/Pet'
         end
       end
       response :default do

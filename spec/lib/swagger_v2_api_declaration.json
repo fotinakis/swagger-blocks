@@ -120,7 +120,7 @@
           "200": {
             "description": "pet response",
             "schema": {
-              "$ref": "#/definitions/Pet"
+              "$ref": "#/parameters/Pet"
             }
           },
           "default": {
