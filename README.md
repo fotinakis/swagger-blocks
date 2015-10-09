@@ -340,6 +340,16 @@ swagger_data = Swagger::Blocks.build_root_json(SWAGGERED_CLASSES)
 File.open('swagger.json', 'w') { |file| file.write(swagger_data.to_json) }
 ```
 
+#### Overriding attributes
+
+If certain attributes must be customized on-the-fly, you can merge a hash containing the customized values on the returned JSON. You can wrap ```build_root_json``` inside your own method:
+
+```Ruby
+def build_and_override_root_json(overrides = {})
+  Swagger::Blocks.build_root_json(SWAGGERED_CLASSES).merge(overrides)
+end
+```
+
 ### Swagger 1.2 example (Rails)
 
 See the [v1.2 docs](https://github.com/fotinakis/swagger-blocks/blob/master/README_v1_2.md).
