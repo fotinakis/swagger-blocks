@@ -342,7 +342,7 @@ File.open('swagger.json', 'w') { |file| file.write(swagger_data.to_json) }
 
 #### Overriding attributes
 
-If certain attributes must be customized on-the-fly, (eg. a dynamic subdomain for the host) you can merge a hash containing the customized values on the returned JSON file. You can wrap ```build_root_json``` inside your own class:
+If certain attributes must be customized on-the-fly, you can merge a hash containing the customized values on the returned JSON. You can wrap ```build_root_json``` inside your own method:
 
 ```Ruby
 def build_and_override_root_json(overrides = {})
