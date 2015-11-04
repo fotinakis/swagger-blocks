@@ -17,7 +17,7 @@ It helps you write API docs in the [Swagger](https://helloreverb.com/developers/
 
 ## Swagger UI demo
 
-http://petstore.swagger.wordnik.com/#!/pet
+http://petstore.swagger.io/
 
 ![swagger-sample](https://cloud.githubusercontent.com/assets/75300/5822830/4769805c-a08c-11e4-9efe-d57cf0f752e0.png)
 
