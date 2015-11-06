@@ -217,7 +217,11 @@ module Swagger
         instance = new
         instance.name = options[:name] if options[:name]
         instance.version = options[:version]
-        instance.instance_eval(&block)
+        ret = instance.instance_eval(&block)
+        # create keys if the block returns a hash
+        if ret.is_a?(Hash)
+          ret.each {|k,v| instance.key(k,v)}
+        end
         instance
       end
 
@@ -251,7 +255,12 @@ module Swagger
       def key(key, value)
         self.data[key] = value
       end
-
+      
+      # To allow write keys in any place in a more clean way
+      def keys=(kvs)
+        kvs.each {|k,v| key(k,v)}
+      end
+      
       def version
         return @version if instance_variable_defined?('@version') && @version
         if data.has_key?(:swagger) && data[:swagger] == '2.0'
