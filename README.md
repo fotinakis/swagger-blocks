@@ -368,6 +368,18 @@ See the [swagger_v2_blocks_spec.rb](https://github.com/fotinakis/swagger-blocks/
 
 Throw a ★ on it! :)
 
+## Filing issues
+
+**Please DO [file an issue](https://github.com/fotinakis/swagger-blocks/issues)**:
+
+- If you find a bug or some part of the Swagger 2.0 spec that swagger-blocks does not support.
+- To propose and discuss a code change before submitting a PR for it.
+- To talk about anything related specifically to swagger-blocks, not Swagger itself.
+
+**Please DO NOT file an issue**:
+
+- If you have a question about Swagger or Swagger UI. We simply cannot support all Swagger-related questions. Check out the http://swagger.io/community/ for help.
+
 ## Release notes
 
 * v1.2.0: Improved support for `$ref` Path Item Object parameters.
