@@ -10,21 +10,16 @@ API_DECLARATION_JSON = open(File.expand_path('../swagger_api_declaration.json', 
 class PetController
   include Swagger::Blocks
 
-  swagger_root do
-    key :swaggerVersion, '1.2'
+  swagger_root swaggerVersion: '1.2'do
     key :apiVersion, '1.0.0'
-    info do
-      key :title, 'Swagger Sample App'
+    info title: 'Swagger Sample App' do
       key :description, "This is a sample server Petstore server.  You can find out more about Swagger \n    at <a href=\"http://swagger.wordnik.com\">http://swagger.wordnik.com</a> or on irc.freenode.net, #swagger.  For this sample,\n    you can use the api key \"special-key\" to test the authorization filters"
       key :termsOfServiceUrl, 'http://helloreverb.com/terms/'
-      key :contact, 'apiteam@wordnik.com'
-      key :license, 'Apache 2.0'
-      key :licenseUrl, 'http://www.apache.org/licenses/LICENSE-2.0.html'
+      keys contact: 'apiteam@wordnik.com',
+           license: 'Apache 2.0',
+           licenseUrl: 'http://www.apache.org/licenses/LICENSE-2.0.html'
     end
-    api do
-      key :path, '/pet'
-      key :description, 'Operations about pets'
-    end
+    api path: '/pet', description: 'Operations about pets'
     api do
       key :path, '/user'
       key :description, 'Operations about user'
@@ -33,39 +28,31 @@ class PetController
       key :path, '/store'
       key :description, 'Operations about store'
     end
-    authorization :oauth2 do
-      key :type, 'oauth2'
-      scope do
-        key :scope, 'email'
-        key :description, 'Access to your email address'
-      end
+    authorization :oauth2, type: 'oauth2' do
+      scope scope: 'email', description: 'Access to your email address'
       scope do
         key :scope, 'pets'
         key :description, 'Access to your pets'
       end
-      grant_type :implicit do
+      grant_type :implicit, tokenName: 'access_token' do
         login_endpoint do
           key :url, 'http://petstore.swagger.wordnik.com/oauth/dialog'
         end
-        key :tokenName, 'access_token'
       end
       grant_type :authorization_code do
-        token_request_endpoint do
+        token_request_endpoint clientSecretName: 'client_secret' do
           key :url, 'http://petstore.swagger.wordnik.com/oauth/requestToken'
           key :clientIdName, 'client_id'
-          key :clientSecretName, 'client_secret'
         end
-        token_endpoint do
+        token_endpoint tokenName: 'access_code' do
           key :url, 'http://petstore.swagger.wordnik.com/oauth/token'
-          key :tokenName, 'access_code'
         end
       end
     end
   end
 
   # All swagger_api_root declarations with the same key will be merged.
-  swagger_api_root :pets do
-    key :swaggerVersion, '1.2'
+  swagger_api_root :pets, swaggerVersion: '1.2' do
     key :apiVersion, '1.0.0'
     key :basePath, 'http://petstore.swagger.wordnik.com/api'
     key :resourcePath, '/pet'
@@ -131,8 +118,7 @@ class PetController
             key :description, 'anything'
           end
         end
-        parameter do
-          key :paramType, :path
+        parameter paramType: :path do
           key :name, :petId
           key :description, 'ID of pet that needs to be fetched'
           key :required, true
@@ -145,8 +131,7 @@ class PetController
           key :required, true
           key :type, :Pet
         end
-        response_message do
-          key :code, 400
+        response_message code: 400 do
           key :message, 'Invalid tag value'
         end
       end
@@ -156,15 +141,12 @@ class PetController
   swagger_api_root :pets do
     api do
       key :path, '/pet/findByStatus'
-      operation do
-        key :method, 'GET'
+      operation method: 'GET' do
         key :summary, 'Finds Pets by status'
         key :notes, 'Multiple status values can be provided with comma seperated strings'
         key :type, :array
         key :nickname, :findPetsByStatus
-        items do
-          key :'$ref', :Pet
-        end
+        items :'$ref' => :Pet
         parameter do
           key :paramType, :query
           key :name, :status
@@ -178,10 +160,7 @@ class PetController
             'sold',
           ]
         end
-        response_message do
-          key :code, 400
-          key :message, 'Invalid status value'
-        end
+        response_message code: 400, message: 'Invalid status value'
       end
     end
   end
@@ -225,8 +204,7 @@ end
 class OtherModelsContainer
   include Swagger::Blocks
 
-  swagger_model :Pet do
-    key :id, :Pet
+  swagger_model :Pet, id: :Pet do
     key :required, [:id, :name]
     property :id do
       key :type, :integer
