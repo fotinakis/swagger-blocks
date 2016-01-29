@@ -333,9 +333,9 @@ The `key` block simply takes the value you give and puts it directly into the fi
 
 #### Inline keys
 
-It is possible to condensed syntax to omit numerous `key` calls using hash argument.
+It is possible to omit numerous `key` calls using inline hash keys on any block.
 
-All three calls are equal:
+All three calls are equivalent:
 
 ```ruby
 parameter do
@@ -354,10 +354,13 @@ end
 ```
 
 ```ruby
-parameter paramType: :path, name: :petId,
+parameter paramType: :path,
+          name: :petId,
           description: 'ID of pet that needs to be fetched',
           type: :string
 ```
+
+These inline keys can be used on any block, not just `parameter` blocks.
 
 #### Writing JSON to a file
 
@@ -410,6 +413,7 @@ Throw a ★ on it! :)
 
 ## Release notes
 
+* v1.3.0: Added support for condensed syntax via inline keys on every block.
 * v1.2.0: Improved support for `$ref` Path Item Object parameters.
 * v1.1.3: Rename tags directive to tag for consistency.
 * v1.1.2: Bugfix for security definition support.
