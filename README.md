@@ -331,6 +331,34 @@ The `key` block simply takes the value you give and puts it directly into the fi
   key :foo, {some_complex: {nested_object: true}}
 ```
 
+#### Inline keys
+
+It is possible to condensed syntax to omit numerous `key` calls using hash argument.
+
+All three calls are equal:
+
+```ruby
+parameter do
+  key :paramType, :path
+  key :name, :petId
+  key :description, 'ID of pet that needs to be fetched'
+  key :type, :string
+end
+```
+
+```ruby
+parameter paramType: :path, name: :petId do
+  key :description, 'ID of pet that needs to be fetched'
+  key :type, :string
+end
+```
+
+```ruby
+parameter paramType: :path, name: :petId,
+          description: 'ID of pet that needs to be fetched',
+          type: :string
+```
+
 #### Writing JSON to a file
 
 If you are not serving the JSON directly and need to write it to a file for some reason, you can easily use `build_root_json` for that as well:

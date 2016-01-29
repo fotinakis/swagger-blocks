@@ -8,10 +8,9 @@ RESOURCE_LISTING_JSON_V2 = open(File.expand_path('../swagger_v2_api_declaration.
 class PetControllerV2
   include Swagger::Blocks
 
-  swagger_root do
+  swagger_root host: 'petstore.swagger.wordnik.com' do
     key :swagger, '2.0'
-    info do
-      key :version, '1.0.0'
+    info version: '1.0.0' do
       key :title, 'Swagger Petstore'
       key :description, 'A sample API that uses a petstore as an example to ' \
                         'demonstrate features in the swagger-2.0 specification'
@@ -23,13 +22,11 @@ class PetControllerV2
         key :name, 'MIT'
       end
     end
-    key :host, 'petstore.swagger.wordnik.com'
     key :basePath, '/api'
     key :schemes, ['http']
     key :consumes, ['application/json']
     key :produces, ['application/json']
-    security_definition :api_key do
-      key :type, :apiKey
+    security_definition :api_key, type: :apiKey do
       key :name, :api_key
       key :in, :header
     end
@@ -37,16 +34,13 @@ class PetControllerV2
       key :type, :oauth2
       key :authorizationUrl, 'http://swagger.io/api/oauth/dialog'
       key :flow, :implicit
-      scopes do
-        key 'write:pets', 'modify pets in your account'
+      scopes 'write:pets' => 'modify pets in your account' do
         key 'read:pets', 'read your pets'
       end
     end
-    tag do
-      key :name, 'pet'
+    tag name: 'pet' do
       key :description, 'Pets operations'
-      externalDocs do
-        key :description, 'Find more info here'
+      externalDocs description: 'Find more info here' do
         key :url, 'https://swagger.io'
       end
     end
@@ -83,8 +77,7 @@ class PetControllerV2
       end
       response 200 do
         key :description, 'pet response'
-        schema do
-          key :type, :array
+        schema type: :array do
           items do
             key :'$ref', :Pet
           end
@@ -119,8 +112,7 @@ class PetControllerV2
           key :'$ref', '#/parameters/Pet'
         end
       end
-      response :default do
-        key :description, 'unexpected error'
+      response :default, description: 'unexpected error' do
         schema do
           key :'$ref', :ErrorModel
         end
@@ -158,9 +150,7 @@ class PetControllerV2
           key :'$ref', :ErrorModel
         end
       end
-      security do
-        key :api_key, []
-      end
+      security api_key: []
       security do
         key :petstore_auth, ['write:pets', 'read:pets']
       end
@@ -193,8 +183,7 @@ end
 class PetV2
   include Swagger::Blocks
 
-  swagger_schema :Pet do
-    key :required, [:id, :name]
+  swagger_schema :Pet, required: [:id, :name] do
     property :id do
       key :type, :integer
       key :format, :int64
