@@ -1,4 +1,5 @@
 require 'json'
+require 'uri'
 require 'swagger/blocks/version'
 
 module Swagger
@@ -146,7 +147,7 @@ module Swagger
       # v2.0: Defines a Swagger Path Item object
       # https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#path-item-object
       def swagger_path(path, &block)
-        path = path.to_sym
+        path = URI.unescape(path.to_s).to_sym
 
         # TODO enforce that path name begins with a '/'
         #   (or x- , but need to research Vendor Extensions first)
