@@ -413,6 +413,7 @@ Throw a ★ on it! :)
 
 ## Release notes
 
+* v1.3.1: Bugfix allow nested objects via `property` nested in `property`.
 * v1.3.0: Added support for condensed syntax via inline keys on every block.
 * v1.2.0: Improved support for `$ref` Path Item Object parameters.
 * v1.1.3: Rename tags directive to tag for consistency.
