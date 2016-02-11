@@ -210,9 +210,15 @@ class PetV2
           key :type, :integer
           key :format, :int64
         end
-	property :name do
-	  key :type, :string
-	end
+        property :name do
+          key :type, :string
+        end
+        property :nestedObject do
+          key :type, :object
+          property :name do
+            key :type, :string
+          end
+        end
       end
     end
   end

@@ -243,6 +243,14 @@
             },
             "name": {
               "type": "string"
+            },
+            "nestedObject": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                }
+              }
             }
           }
         }
