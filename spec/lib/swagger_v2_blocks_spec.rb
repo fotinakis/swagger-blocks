@@ -219,6 +219,18 @@ class PetV2
             key :type, :string
           end
         end
+        property :arrayOfObjects do
+          key :type, :array
+          items do
+            key :type, :object
+            property :name do
+              key :type, :string
+            end
+            property :age do
+              key :type, :integer
+            end
+          end
+        end
       end
     end
   end
