@@ -692,7 +692,13 @@ module Swagger
 
     # v1.2:
     # v2.0:
-    class ItemsNode < Node; end
+    class ItemsNode < Node
+      def property(name, inline_keys = nil, &block)
+        self.data[:properties] ||= Swagger::Blocks::PropertiesNode.new
+        self.data[:properties].version = version
+        self.data[:properties].property(name, inline_keys, &block)
+      end
+    end
 
     # v1.2: http://goo.gl/PvwUXj#524-parameter-object
     # v2.0: https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#parameter-object
