@@ -499,6 +499,11 @@ module Swagger
         raise ArgumentError.new("#{name} not in #{OPERATION_TYPES}") if !OPERATION_TYPES.include?(op)
         self.data[op] = Swagger::Blocks::OperationNode.call(version: version, inline_keys: inline_keys, &block)
       end
+
+      def parameter(inline_keys = nil, &block)
+        self.data[:parameters] ||= []
+        self.data[:parameters] << Swagger::Blocks::ParameterNode.call(version: version, inline_keys: inline_keys, &block)
+      end
     end
 
     # v1.2: http://goo.gl/PvwUXj#523-operation-object
