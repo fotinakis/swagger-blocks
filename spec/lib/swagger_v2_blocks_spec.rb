@@ -121,6 +121,14 @@ class PetControllerV2
   end
 
   swagger_path '/pets/{id}' do
+    parameter do
+      key :name, :id
+      key :in, :path
+      key :description, 'ID of pet'
+      key :required, true
+      key :type, :integer
+      key :format, :int64
+    end
     operation :get do
       key :description, 'Returns a user based on a single ID, if the user does not have access to the pet'
       key :operationId, 'findPetById'
@@ -130,14 +138,6 @@ class PetControllerV2
         'text/xml',
         'text/html',
       ]
-      parameter do
-        key :name, :id
-        key :in, :path
-        key :description, 'ID of pet to fetch'
-        key :required, true
-        key :type, :integer
-        key :format, :int64
-      end
       response 200 do
         key :description, 'pet response'
         schema do
@@ -158,14 +158,6 @@ class PetControllerV2
     operation :delete do
       key :description, 'deletes a single pet based on the ID supplied'
       key :operationId, 'deletePet'
-      parameter do
-        key :name, :id
-        key :in, :path
-        key :description, 'ID of pet to delete'
-        key :required, true
-        key :type, :integer
-        key :format, :int64
-      end
       response 204 do
         key :description, 'pet deleted'
       end
