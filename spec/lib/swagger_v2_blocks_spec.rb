@@ -26,6 +26,15 @@ class PetControllerV2
     key :schemes, ['http']
     key :consumes, ['application/json']
     key :produces, ['application/json']
+    tag name: 'pet' do
+      key :description, 'Pets operations'
+      externalDocs description: 'Find more info here' do
+        key :url, 'https://swagger.io'
+      end
+    end
+  end
+
+  swagger_root do
     security_definition :api_key, type: :apiKey do
       key :name, :api_key
       key :in, :header
@@ -36,12 +45,6 @@ class PetControllerV2
       key :flow, :implicit
       scopes 'write:pets' => 'modify pets in your account' do
         key 'read:pets', 'read your pets'
-      end
-    end
-    tag name: 'pet' do
-      key :description, 'Pets operations'
-      externalDocs description: 'Find more info here' do
-        key :url, 'https://swagger.io'
       end
     end
   end

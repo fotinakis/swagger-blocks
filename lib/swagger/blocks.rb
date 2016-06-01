@@ -114,7 +114,11 @@ module Swagger
       # v2.0: Defines a Swagger Object
       # v2.0: https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#swagger-object
       def swagger_root(inline_keys = nil, &block)
-        @swagger_root_node ||= Swagger::Blocks::RootNode.call(inline_keys: inline_keys, &block)
+        if instance_variable_defined?(:@swagger_root_node)
+          @swagger_root_node.instance_eval(&block)
+        else
+          @swagger_root_node = Swagger::Blocks::RootNode.call(inline_keys: inline_keys, &block)
+        end
       end
 
       # v1.2: Defines a Swagger API Declaration.
