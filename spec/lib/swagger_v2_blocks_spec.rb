@@ -114,7 +114,7 @@ class PetControllerV2
       end
       response :default, description: 'unexpected error' do
         schema do
-          key :'$ref', :ErrorModel
+          key :'$ref', 'http://example.com/schema.json#/definitions/ErrorModel'
         end
       end
     end

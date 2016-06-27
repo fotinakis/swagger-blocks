@@ -234,7 +234,7 @@ module Swagger
           elsif is_swagger_2_0? && value.is_a?(Hash)
             result[key] = {}
             value.each_pair {|k, v| result[key][k] = (v.respond_to?(:as_json) ? v.as_json : v) }
-          elsif is_swagger_2_0? && key.to_s.eql?('$ref') && (value.to_s !~ %r{^#/})
+          elsif is_swagger_2_0? && key.to_s.eql?('$ref') && (value.to_s !~ %r{^#/|https?://})
             result[key] = "#/definitions/#{value}"
           else
             result[key] = value

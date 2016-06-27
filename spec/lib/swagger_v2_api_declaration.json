@@ -126,7 +126,7 @@
           "default": {
             "description": "unexpected error",
             "schema": {
-              "$ref": "#/definitions/ErrorModel"
+              "$ref": "http://example.com/schema.json#/definitions/ErrorModel"
             }
           }
         }
