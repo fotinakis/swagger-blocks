@@ -613,10 +613,9 @@ module Swagger
         self.data[:headers][head] = Swagger::Blocks::HeaderNode.call(version: version, inline_keys: inline_keys, &block)
       end
 
-      def example(exam, inline_keys = nil, &block)
+      def example(inline_keys = nil, &block)
         # TODO validate 'exam' is as per spec
-        self.data[:examples] ||= {}
-        self.data[:examples][exam] = Swagger::Blocks::ExampleNode.call(version: version, inline_keys: inline_keys, &block)
+        self.data[:examples] = Swagger::Blocks::ExampleNode.call(version: version, inline_keys: inline_keys, &block)
       end
     end
 
