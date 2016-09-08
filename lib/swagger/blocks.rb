@@ -159,7 +159,7 @@ module Swagger
           path_node.instance_eval(&block)
         else
           # First time we've seen this path
-          @swagger_path_node_map[path] = Swagger::Blocks::PathNode.call(version: '2.0', &block)
+          @swagger_path_node_map[path] = Swagger::Blocks::PathNode.call(swaggered_class: self, path: path, version: '2.0', &block)
         end
       end
 
@@ -210,13 +210,16 @@ module Swagger
     # Base node for representing every object in the Swagger DSL.
     class Node
       attr_accessor :name
-      attr_writer :version
+      attr_writer :version, :method, :path, :swaggered_class
 
       def self.call(options = {}, &block)
         # Create a new instance and evaluate the block into it.
         instance = new
         instance.name = options[:name] if options[:name]
         instance.version = options[:version]
+        instance.method = options[:method] if options[:method]
+        instance.path = options[:path] if options[:path]
+        instance.swaggered_class = options[:swaggered_class] if options[:swaggered_class]
         instance.keys options[:inline_keys]
         instance.instance_eval(&block) if block
         instance
@@ -255,6 +258,18 @@ module Swagger
 
       def key(key, value)
         self.data[key] = value
+      end
+
+      def method
+        @method ||= nil
+      end
+
+      def path
+        @path ||= nil
+      end
+
+      def swaggered_class
+        @swaggered_class ||= nil
       end
 
       def version
@@ -497,7 +512,7 @@ module Swagger
       def operation(op, inline_keys = nil, &block)
         op = op.to_sym
         raise ArgumentError.new("#{name} not in #{OPERATION_TYPES}") if !OPERATION_TYPES.include?(op)
-        self.data[op] = Swagger::Blocks::OperationNode.call(version: version, inline_keys: inline_keys, &block)
+        self.data[op] = Swagger::Blocks::OperationNode.call(swaggered_class: swaggered_class, path: path, method: op, version: version, inline_keys: inline_keys, &block)
       end
 
       def parameter(inline_keys = nil, &block)
