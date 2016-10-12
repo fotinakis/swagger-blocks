@@ -381,6 +381,37 @@ def build_and_override_root_json(overrides = {})
 end
 ```
 
+#### Reducing boilerplate
+
+Most APIs have some common responses for 401s, 404s, etc. Rather than declaring these responses over and over, you can create a reusable module.
+
+```ruby
+module SwaggerResponses
+  module AuthenticationError
+    def self.extended(base)
+      base.response 401 do
+        key :description, 'not authorized'
+        schema do
+          key :'$ref', :AuthenticationError
+        end
+      end
+    end
+  end
+end
+```
+
+Now, you just need to extend it:
+
+```ruby
+operation :post do
+  extend SwaggerResponses::AuthenticationError
+  # ...
+  response 200 do
+    # ...
+  end
+end
+```
+
 ### Swagger 1.2 example (Rails)
 
 See the [v1.2 docs](https://github.com/fotinakis/swagger-blocks/blob/master/README_v1_2.md).
