@@ -44,6 +44,12 @@ class PetControllerV2
         key :url, 'https://swagger.io'
       end
     end
+    parameter :species do
+      key :name, :species
+      key :in, :body
+      key :description, 'Species of this pet'
+      key :type, :string
+    end
   end
 
   swagger_path '/pets' do
@@ -105,6 +111,7 @@ class PetControllerV2
           key :'$ref', :PetInput
         end
       end
+      parameter :species
       response 200 do
         key :description, 'pet response'
         schema do
@@ -128,6 +135,37 @@ class PetControllerV2
       key :required, true
       key :type, :integer
       key :format, :int64
+    end
+    operation :put do
+      key :description, 'Update a pet in the store.'
+      key :operationId, 'updatePet'
+      key :produces, [
+        'application/json'
+      ]
+      parameter do
+        key :name, :pet
+        key :in, :body
+        key :description, 'Pet to update in the store'
+        key :required, true
+        schema do
+          key :'$ref', :PetInput
+        end
+      end
+
+      parameter :species
+
+      response 200 do
+        key :description, 'pet response'
+        schema do
+          # Wrong form here, but checks that #/ strings are not transformed.
+          key :'$ref', '#/parameters/Pet'
+        end
+      end
+      response :default, description: 'unexpected error' do
+        schema do
+          key :'$ref', 'http://example.com/schema.json#/definitions/ErrorModel'
+        end
+      end
     end
     operation :get do
       key :description, 'Returns a user based on a single ID, if the user does not have access to the pet'
@@ -269,7 +307,6 @@ describe 'Swagger::Blocks v2' do
     end
     it 'is idempotent' do
       swaggered_classes = [PetControllerV2, PetV2, ErrorModelV2]
-      actual = JSON.parse(Swagger::Blocks.build_root_json(swaggered_classes).to_json)
       actual = JSON.parse(Swagger::Blocks.build_root_json(swaggered_classes).to_json)
       data = JSON.parse(RESOURCE_LISTING_JSON_V2)
       expect(actual).to eq(data)

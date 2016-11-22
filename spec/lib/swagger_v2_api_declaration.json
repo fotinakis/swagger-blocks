@@ -49,6 +49,14 @@
       }
     }
   ],
+  "parameters": {
+    "species": {
+      "name": "species",
+      "in": "body",
+      "description": "Species of this pet",
+      "type": "string"
+    }
+  },
   "paths": {
     "/pets": {
       "get": {
@@ -114,6 +122,9 @@
             "schema": {
               "$ref": "#/definitions/PetInput"
             }
+          },
+          {
+            "$ref": "#/parameters/species"
           }
         ],
         "responses": {
@@ -177,6 +188,41 @@
             ]
           }
         ]
+      },
+      "put": {
+        "description": "Update a pet in the store.",
+        "operationId": "updatePet",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "pet",
+            "in": "body",
+            "description": "Pet to update in the store",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/PetInput"
+            }
+          },
+          {
+            "$ref": "#/parameters/species"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "pet response",
+            "schema": {
+              "$ref": "#/parameters/Pet"
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "schema": {
+              "$ref": "http://example.com/schema.json#/definitions/ErrorModel"
+            }
+          }
+        }
       },
       "delete": {
         "description": "deletes a single pet based on the ID supplied",
