@@ -331,6 +331,31 @@ The `key` block simply takes the value you give and puts it directly into the fi
   key :foo, {some_complex: {nested_object: true}}
 ```
 
+#### Parameter referencing
+
+It is possible to reference parameters rather than explicitly define them in every action in which they are used.
+
+To define a reusable parameter, declare it within `swagger_root`
+To reference the parameter, call it within a `swagger_path` or `operation` node
+
+```ruby
+swagger_root do
+  key :swagger, '2.0'
+  # ...
+  parameter :species do
+    key :name, :species
+    key :description, 'Species of this pet'
+  end
+end
+
+swagger_path '/pets/' do
+  operation :post do
+    parameter :species
+    # ...
+  end
+end
+```
+
 #### Inline keys
 
 It is possible to omit numerous `key` calls using inline hash keys on any block.
@@ -382,6 +407,8 @@ end
 ```
 
 #### Reducing boilerplate
+
+To create reusable parameters, please see [parameter referencing](#parameter-referencing)
 
 Most APIs have some common responses for 401s, 404s, etc. Rather than declaring these responses over and over, you can create a reusable module.
 

@@ -501,6 +501,8 @@ module Swagger
       end
 
       def parameter(inline_keys = nil, &block)
+        inline_keys = {'$ref' => "#/parameters/#{inline_keys}"} if inline_keys.is_a?(Symbol)
+
         self.data[:parameters] ||= []
         self.data[:parameters] << Swagger::Blocks::ParameterNode.call(version: version, inline_keys: inline_keys, &block)
       end
@@ -509,8 +511,9 @@ module Swagger
     # v1.2: http://goo.gl/PvwUXj#523-operation-object
     # v2.0: https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#operation-object
     class OperationNode < Node
-
       def parameter(inline_keys = nil, &block)
+        inline_keys = {'$ref' => "#/parameters/#{inline_keys}"} if inline_keys.is_a?(Symbol)
+
         self.data[:parameters] ||= []
         self.data[:parameters] << Swagger::Blocks::ParameterNode.call(version: version, inline_keys: inline_keys, &block)
       end
