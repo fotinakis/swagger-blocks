@@ -408,7 +408,7 @@ end
 
 #### Reducing boilerplate
 
-To create reusable parameters, please see [parameter referencing](#parameter-referencing)
+To create reusable parameters, please see [parameter referencing](#parameter-referencing).
 
 Most APIs have some common responses for 401s, 404s, etc. Rather than declaring these responses over and over, you can create a reusable module.
 
@@ -471,6 +471,7 @@ Throw a ★ on it! :)
 
 ## Release notes
 
+* v1.4.0: Allow parameters to be defined once in swagger_root and reused.
 * v1.3.4: Fix support for fully-qualified URIs in `$ref` values.
 * v1.3.3: Bugfix to allow `parameter` inside `swagger_path`.
 * v1.3.2: Bugfix to allow `property` inside `items` for rare extended schema uses.
