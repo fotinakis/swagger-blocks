@@ -47,10 +47,10 @@ module Swagger
       # TODO should this merge the contents of the root nodes instead?
       def self.limit_root_node(root_nodes)
         if root_nodes.length == 0
-          raise Swagger::Blocks::Errors::DeclarationError.new(
+          raise Swagger::Blocks::DeclarationError.new(
             'swagger_root must be declared')
         elsif root_nodes.length > 1
-          raise Swagger::Blocks::Errors::DeclarationError.new(
+          raise Swagger::Blocks::DeclarationError.new(
             'Only one swagger_root declaration is allowed.')
         end
         root_nodes.first

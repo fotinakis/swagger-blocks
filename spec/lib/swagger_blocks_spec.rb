@@ -286,12 +286,12 @@ describe 'Swagger::Blocks v1' do
     it 'errors if no swagger_root is declared' do
       expect {
         Swagger::Blocks.build_root_json([])
-      }.to raise_error(Swagger::Blocks::Errors::DeclarationError)
+      }.to raise_error(Swagger::Blocks::DeclarationError)
     end
     it 'errors if mulitple swagger_roots are declared' do
       expect {
         Swagger::Blocks.build_root_json([PetController, PetController])
-      }.to raise_error(Swagger::Blocks::Errors::DeclarationError)
+      }.to raise_error(Swagger::Blocks::DeclarationError)
     end
     it 'does not error if given non-swaggered classes' do
       Swagger::Blocks.build_root_json([PetController, BlankController])
@@ -338,12 +338,12 @@ describe 'Swagger::Blocks v1' do
     it 'errors if no swagger_root is declared' do
       expect {
         Swagger::Blocks.build_root_json([])
-      }.to raise_error(Swagger::Blocks::Errors::DeclarationError)
+      }.to raise_error(Swagger::Blocks::DeclarationError)
     end
     it 'errors if multiple swagger_roots are declared' do
       expect {
         Swagger::Blocks.build_root_json([PetController, PetController])
-      }.to raise_error(Swagger::Blocks::Errors::DeclarationError)
+      }.to raise_error(Swagger::Blocks::DeclarationError)
     end
   end
 end

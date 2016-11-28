@@ -25,14 +25,14 @@ module Swagger
     def self.build_api_json(resource_name, swaggered_classes)
       data = Swagger::Blocks::InternalHelpers.parse_swaggered_classes(swaggered_classes)
       if !data[:root_node].is_swagger_1_2?
-        raise Errors::NotSupportedError.new(
+        raise NotSupportedError.new(
           'build_api_json only supports Swagger 1.2, you do not need to call this method ' +
           'for Swagger >= 2.0 definitions.'
         )
       end
 
       api_node = data[:api_node_map][resource_name.to_sym]
-      raise Swagger::Blocks::Errors::NotFoundError.new(
+      raise Swagger::Blocks::NotFoundError.new(
         "Not found: swagger_api_root named #{resource_name}") if !api_node
 
       # Aggregate all model definitions into a new ModelsNode tree and add it to the JSON.

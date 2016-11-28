@@ -1,17 +1,11 @@
 require 'swagger/blocks/root'
 require 'swagger/blocks/internal_helpers'
 require 'swagger/blocks/class_methods'
+require 'swagger/blocks/errors'
 
 module Swagger
   module Blocks
     autoload :Node, 'swagger/blocks/node'
-
-    module Errors
-      autoload :Error, 'swagger/blocks/errors/error'
-      autoload :DeclarationError, 'swagger/blocks/errors/declaration_error'
-      autoload :NotFoundError, 'swagger/blocks/errors/not_found_error'
-      autoload :NotSupportedError, 'swagger/blocks/errors/not_supported_error'
-    end
 
     module Nodes
       autoload :AllOfNode, 'swagger/blocks/nodes/all_of_node'
