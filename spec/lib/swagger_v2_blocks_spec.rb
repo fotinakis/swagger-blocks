@@ -314,17 +314,17 @@ describe 'Swagger::Blocks v2' do
     it 'errors if no swagger_root is declared' do
       expect {
         Swagger::Blocks.build_root_json([])
-      }.to raise_error(Swagger::Blocks::DeclarationError)
+      }.to raise_error(Swagger::Blocks::Errors::DeclarationError)
     end
     it 'errors if mulitple swagger_roots are declared' do
       expect {
         Swagger::Blocks.build_root_json([PetControllerV2, PetControllerV2])
-      }.to raise_error(Swagger::Blocks::DeclarationError)
+      }.to raise_error(Swagger::Blocks::Errors::DeclarationError)
     end
     it 'errors if calling build_api_json' do
       expect {
         Swagger::Blocks.build_api_json('fake', [PetControllerV2])
-      }.to raise_error(Swagger::Blocks::NotSupportedError)
+      }.to raise_error(Swagger::Blocks::Errors::NotSupportedError)
     end
   end
 end
