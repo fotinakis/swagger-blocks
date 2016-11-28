@@ -1,7 +1,6 @@
 module Swagger
   module Blocks
     module Nodes
-      # v1.2: http://goo.gl/PvwUXj#527-model-object
       class PropertyNode < Node
         def items(inline_keys = nil, &block)
           self.data[:items] = Swagger::Blocks::Nodes::ItemsNode.call(version: version, inline_keys: inline_keys, &block)

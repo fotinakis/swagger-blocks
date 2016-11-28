@@ -52,17 +52,8 @@ module Swagger
 
       def version
         return @version if instance_variable_defined?('@version') && @version
-        if data.has_key?(:swagger) && data[:swagger] == '2.0'
-          '2.0'
-        elsif data.has_key?(:swaggerVersion) && data[:swaggerVersion] == '1.2'
-          '1.2'
-        else
-          raise DeclarationError.new("You must specify swaggerVersion '1.2' or swagger '2.0'")
-        end
-      end
-
-      def is_swagger_1_2?
-        version == '1.2'
+        return '2.0' if data.has_key?(:swagger) && data[:swagger] == '2.0'
+        raise DeclarationError, "You must specify swagger '2.0'"
       end
 
       def is_swagger_2_0?
