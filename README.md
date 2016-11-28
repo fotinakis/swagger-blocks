@@ -255,15 +255,17 @@ class ApidocsController < ActionController::Base
   end
 
   # A list of all classes that have swagger_* declarations.
-  SWAGGERED_CLASSES = [
-    PetsController,
-    Pet,
-    ErrorModel,
-    self,
-  ].freeze
+  def swaggered_classes
+    [
+      PetsController,
+      Pet,
+      ErrorModel,
+      self.class
+    ]
+  end
 
   def index
-    render json: Swagger::Blocks.build_root_json(SWAGGERED_CLASSES)
+    render json: Swagger::Blocks.build_root_json(swaggered_classes)
   end
 end
 ```
@@ -271,7 +273,7 @@ end
 The special part of this controller is this line:
 
 ```Ruby
-render json: Swagger::Blocks.build_root_json(SWAGGERED_CLASSES)
+render json: Swagger::Blocks.build_root_json(swaggered_classes)
 ```
 
 That is the only line necessary to build the full [root Swagger object](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#schema) JSON and all definitions underneath it. You simply pass in a list of all the "swaggered" classes in your app.
@@ -392,7 +394,7 @@ These inline keys can be used on any block, not just `parameter` blocks.
 If you are not serving the JSON directly and need to write it to a file for some reason, you can easily use `build_root_json` for that as well:
 
 ```Ruby
-swagger_data = Swagger::Blocks.build_root_json(SWAGGERED_CLASSES)
+swagger_data = Swagger::Blocks.build_root_json(swaggered_classes)
 File.open('swagger.json', 'w') { |file| file.write(swagger_data.to_json) }
 ```
 
@@ -402,7 +404,7 @@ If certain attributes must be customized on-the-fly, you can merge a hash contai
 
 ```Ruby
 def build_and_override_root_json(overrides = {})
-  Swagger::Blocks.build_root_json(SWAGGERED_CLASSES).merge(overrides)
+  Swagger::Blocks.build_root_json(swaggered_classes).merge(overrides)
 end
 ```
 

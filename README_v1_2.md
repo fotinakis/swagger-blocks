@@ -111,18 +111,20 @@ class ApidocsController < ActionController::Base
   end
 
   # A list of all classes that have swagger_* declarations.
-  SWAGGERED_CLASSES = [
-    PetsController,
-    Pets,
-    self,
-  ].freeze
+  def swaggered_classes 
+    [
+      PetsController,
+      Pets,
+      self.class
+    ]
+  end
 
   def index
-    render json: Swagger::Blocks.build_root_json(SWAGGERED_CLASSES)
+    render json: Swagger::Blocks.build_root_json(swaggered_classes)
   end
 
   def show
-    render json: Swagger::Blocks.build_api_json(params[:id], SWAGGERED_CLASSES)
+    render json: Swagger::Blocks.build_api_json(params[:id], swaggered_classes)
   end
 end
 
@@ -131,11 +133,11 @@ end
 The special part of this controller are these lines:
 
 ```Ruby
-render json: Swagger::Blocks.build_root_json(SWAGGERED_CLASSES)
+render json: Swagger::Blocks.build_root_json(swaggered_classes)
 ```
 
 ```Ruby
-render json: Swagger::Blocks.build_api_json(params[:id], SWAGGERED_CLASSES)
+render json: Swagger::Blocks.build_api_json(params[:id], swaggered_classes)
 ```
 
 Those are the only lines necessary to build the root Swagger [Resource Listing](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#51-resource-listing) JSON and the JSON for each Swagger [API Declaration](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#52-api-declaration). You simply pass in a list of all the "swaggered" classes in your app.
