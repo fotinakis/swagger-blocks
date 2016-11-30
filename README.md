@@ -12,7 +12,6 @@ It helps you write API docs in the [Swagger](https://helloreverb.com/developers/
 * Supports **live updating** by design. Change code, refresh your API docs.
 * **Works with all Ruby web frameworks** including Rails, Sinatra, etc.
 * **100% support** for all features of the [Swagger 2.0](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md) spec.
-* [Swagger 1.2](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md) is no longer supported in Swagger::Blocks 2.0, but you may use [1.4.0](https://github.com/fotinakis/swagger-blocks/tree/v1.4.0).
 * Flexible—you can use Swagger::Blocks anywhere, split up blocks to fit your style preferences, etc. Since it's pure Ruby and serves definitions dynamically, you can easily use initializers/config objects to change values or even **show different APIs based on environment**.
 * 1:1 naming with the Swagger spec—block names and nesting should match almost exactly with the swagger spec, with rare exceptions to make things more convenient.
 
@@ -32,7 +31,7 @@ Or install directly with `gem install swagger-blocks`.
 
 ## Swagger 2.0 example (Rails)
 
-This is a simplified example based on the objects in the Petstore [Swagger Sample App](http://petstore.swagger.wordnik.com/#!/pet). For a more complex and complete example, see the [swagger_v2_blocks_spec.rb](https://github.com/fotinakis/swagger-blocks/blob/master/spec/lib/swagger_v2_blocks_spec.rb) file, or see the [v1.2 docs](https://github.com/fotinakis/swagger-blocks/blob/master/README_v1_2.md).
+This is a simplified example based on the objects in the Petstore [Swagger Sample App](http://petstore.swagger.wordnik.com/#!/pet). For a more complex and complete example, see the [swagger_v2_blocks_spec.rb](https://github.com/fotinakis/swagger-blocks/blob/master/spec/lib/swagger_v2_blocks_spec.rb) file.
 
 Also note that **Rails is not required**, you can use Swagger::Blocks in plain Ruby objects.
 
@@ -440,13 +439,13 @@ operation :post do
 end
 ```
 
-### Swagger 1.2
-Swagger 1.2 is no longer supported as of Swagger::Blocks 2.0
-Please use [v1.4.0](https://github.com/fotinakis/swagger-blocks/tree/v1.4.0) for Swagger 1.2 support.
-
 ## Reference
 
 See the [swagger_v2_blocks_spec.rb](https://github.com/fotinakis/swagger-blocks/blob/master/spec/lib/swagger_v2_blocks_spec.rb) for examples of more complex features and declarations possible.
+
+### Swagger 1.2
+
+The old [Swagger 1.2](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md) spec is not supported in swagger-blocks >= 2.0.0, but you may use [1.4.0](https://github.com/fotinakis/swagger-blocks/tree/v1.4.0).
 
 ## Contributing
 
@@ -472,6 +471,7 @@ Throw a ★ on it! :)
 
 ## Release notes
 
+* v2.0.0: Code cleanup, drop support for Swagger 1.2 spec.
 * v1.4.0: Allow parameters to be defined once in swagger_root and reused.
 * v1.3.4: Fix support for fully-qualified URIs in `$ref` values.
 * v1.3.3: Bugfix to allow `parameter` inside `swagger_path`.
