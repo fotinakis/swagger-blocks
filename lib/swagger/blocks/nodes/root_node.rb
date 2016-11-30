@@ -2,38 +2,9 @@ module Swagger
   module Blocks
     module Nodes
       class RootNode < Node
-        def initialize(*args)
-          # An internal list of the user-defined names that uniquely identify each API tree.
-          # Only used in Swagger 1.2, but when initializing a root node we haven't seen the
-          # swaggerVersion/swagger key yet
-          @api_paths = []
-          super
-        end
-
-        def has_api_path?(api_path)
-          raise NotSupportedError unless is_swagger_1_2?
-
-          api_paths = self.data[:apis].map { |x| x.data[:path] }
-          api_paths.include?(api_path)
-        end
-
-        def authorization(name, inline_keys = nil, &block)
-          raise NotSupportedError unless is_swagger_1_2?
-
-          self.data[:authorizations] ||= Swagger::Blocks::Nodes::ResourceListingAuthorizationsNode.new
-          self.data[:authorizations].version = version
-          self.data[:authorizations].authorization(name, inline_keys, &block)
-        end
 
         def info(inline_keys = nil, &block)
           self.data[:info] = Swagger::Blocks::Nodes::InfoNode.call(version: version, inline_keys: inline_keys, &block)
-        end
-
-        def api(inline_keys = nil, &block)
-          raise NotSupportedError unless is_swagger_1_2?
-
-          self.data[:apis] ||= []
-          self.data[:apis] << Swagger::Blocks::Nodes::ResourceNode.call(version: version, inline_keys: inline_keys ,&block)
         end
 
         def parameter(param, inline_keys = nil, &block)

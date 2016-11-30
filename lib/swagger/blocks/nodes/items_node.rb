@@ -1,7 +1,6 @@
 module Swagger
   module Blocks
     module Nodes
-      # v1.2:
       # v2.0:
       class ItemsNode < Node
         def property(name, inline_keys = nil, &block)

@@ -23,14 +23,6 @@ module Swagger
           if swagger_nodes[:schema_node_map]
             schema_node_map.merge!(swagger_nodes[:schema_node_map])
           end
-
-          # 1.2
-          if swagger_nodes[:api_node_map]
-            api_node_map.merge!(swagger_nodes[:api_node_map])
-          end
-          if swagger_nodes[:models_node]
-            models_nodes << swagger_nodes[:models_node]
-          end
         end
         data = {root_node: self.limit_root_node(root_nodes)}
         if data[:root_node].is_swagger_2_0?
