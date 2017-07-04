@@ -276,6 +276,17 @@ render json: Swagger::Blocks.build_root_json(SWAGGERED_CLASSES)
 
 That is the only line necessary to build the full [root Swagger object](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#schema) JSON and all definitions underneath it. You simply pass in a list of all the "swaggered" classes in your app.
 
+If you want to include controllers outside the standard path just use the full class path including module names, like:
+
+```Ruby
+SWAGGERED_CLASSES = [
+  Api::V1::PetsController,
+  self,
+]
+```
+
+If you are receiving a "swagger_root must be declared" error make sure you are including "self" in your SWAGGERED_CLASSES definition, as shown above.
+
 Now, simply point Swagger UI at `/apidocs` and everything should Just Work™. If you change any of the Swagger block definitions, you can simply refresh Swagger UI to see the changes.
 
 ### Security handling
