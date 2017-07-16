@@ -43,6 +43,7 @@ class PetsController < ActionController::Base
 
   swagger_path '/pets/{id}' do
     operation :get do
+      key :summary, 'Find Pet by ID'
       key :description, 'Returns a single pet if the user has access'
       key :operationId, 'findPetById'
       key :tags, [
@@ -72,6 +73,7 @@ class PetsController < ActionController::Base
   end
   swagger_path '/pets' do
     operation :get do
+      key :summary, 'All Pets'
       key :description, 'Returns all pets from the system that the user has access to'
       key :operationId, 'findPets'
       key :produces, [
