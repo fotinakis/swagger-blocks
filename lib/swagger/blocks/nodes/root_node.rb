@@ -37,6 +37,10 @@ module Swagger
           self.data[:security] << Swagger::Blocks::Nodes::SecurityRequirementNode.call(version: version, inline_keys: inline_keys, &block)
         end
 
+        def externalDocs(inline_keys = nil, &block)
+          self.data[:externalDocs] = Swagger::Blocks::Nodes::ExternalDocsNode.call(version: version, inline_keys: inline_keys, &block)
+        end
+
         def tag(inline_keys = nil, &block)
           raise NotSupportedError unless is_swagger_2_0?
 

@@ -39,6 +39,10 @@
       }
     }
   },
+  "externalDocs": {
+    "description": "Find more info here",
+    "url": "https://swagger.io"
+  },
   "tags": [
     {
       "name": "pet",

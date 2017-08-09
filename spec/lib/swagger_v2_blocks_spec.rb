@@ -38,6 +38,9 @@ class PetControllerV2
         key 'read:pets', 'read your pets'
       end
     end
+    externalDocs description: 'Find more info here' do
+      key :url, 'https://swagger.io'
+    end
     tag name: 'pet' do
       key :description, 'Pets operations'
       externalDocs description: 'Find more info here' do
