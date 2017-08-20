@@ -261,6 +261,15 @@ class PetV2
             end
           end
         end
+        property :arrayOfArrays do
+          key :type, :array
+          items do
+            key :type, :array
+            items do
+              key :type, :integer
+            end
+          end
+        end
       end
     end
   end
