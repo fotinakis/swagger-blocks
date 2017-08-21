@@ -301,6 +301,15 @@
                   }
                 }
               }
+            },
+            "arrayOfArrays": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              }
             }
           }
         }
