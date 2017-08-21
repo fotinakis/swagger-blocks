@@ -484,6 +484,7 @@ Throw a ★ on it! :)
 
 ## Release notes
 
+* v2.0.1: Bugfix to allow nested arrays of `items`.
 * v2.0.0: Code cleanup, drop support for Swagger 1.2 spec.
 * v1.4.0: Allow parameters to be defined once in swagger_root and reused.
 * v1.3.4: Fix support for fully-qualified URIs in `$ref` values.
