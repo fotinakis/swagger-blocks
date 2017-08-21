@@ -8,6 +8,7 @@ module Swagger
           self.data[:properties].version = version
           self.data[:properties].property(name, inline_keys, &block)
         end
+        
         def items(inline_keys = nil, &block)
           self.data[:items] = Swagger::Blocks::Nodes::ItemsNode.call(version: version, inline_keys: inline_keys, &block)
         end
