@@ -8,7 +8,7 @@ Gem::Specification.new do |spec|
   spec.version       = Swagger::Blocks::VERSION
   spec.authors       = ['Mike Fotinakis']
   spec.email         = ['mike@fotinakis.com']
-  spec.summary       = 'Define and serve live-updating OpenAPI (fka Swagger) JSON for Ruby apps.'
+  spec.summary       = 'Define and serve live-updating OpenAPI (aka Swagger) JSON for Ruby apps.'
   spec.description   = spec.summary
   spec.homepage      = 'https://github.com/fotinakis/swagger-blocks'
   spec.license       = 'MIT'
