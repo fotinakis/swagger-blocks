@@ -328,7 +328,7 @@ describe 'Swagger::Blocks v2' do
         Swagger::Blocks.build_root_json([])
       }.to raise_error(Swagger::Blocks::DeclarationError)
     end
-    it 'errors if mulitple swagger_roots are declared' do
+    it 'errors if multiple swagger_roots are declared' do
       expect {
         Swagger::Blocks.build_root_json([PetControllerV2, PetControllerV2])
       }.to raise_error(Swagger::Blocks::DeclarationError)
