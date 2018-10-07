@@ -9,7 +9,9 @@ module Swagger
 
     module Nodes
       autoload :AllOfNode, 'swagger/blocks/nodes/all_of_node'
+      autoload :ComponentNode, 'swagger/blocks/nodes/component_node'
       autoload :ContactNode, 'swagger/blocks/nodes/contact_node'
+      autoload :ContentNode, 'swagger/blocks/nodes/content_node'
       autoload :ExampleNode, 'swagger/blocks/nodes/example_node'
       autoload :ExternalDocsNode, 'swagger/blocks/nodes/external_docs_node'
       autoload :HeaderNode, 'swagger/blocks/nodes/header_node'
@@ -21,12 +23,14 @@ module Swagger
       autoload :PathNode, 'swagger/blocks/nodes/path_node'
       autoload :PropertiesNode, 'swagger/blocks/nodes/properties_node'
       autoload :PropertyNode, 'swagger/blocks/nodes/property_node'
+      autoload :RequestBodyNode, 'swagger/blocks/nodes/request_body_node'
       autoload :ResponseNode, 'swagger/blocks/nodes/response_node'
       autoload :RootNode, 'swagger/blocks/nodes/root_node'
       autoload :SchemaNode, 'swagger/blocks/nodes/schema_node'
       autoload :ScopesNode, 'swagger/blocks/nodes/scopes_node'
       autoload :SecurityRequirementNode, 'swagger/blocks/nodes/security_requirement_node'
       autoload :SecuritySchemeNode, 'swagger/blocks/nodes/security_scheme_node'
+      autoload :ServerNode, 'swagger/blocks/nodes/server_node'
       autoload :TagNode, 'swagger/blocks/nodes/tag_node'
       autoload :XmlNode, 'swagger/blocks/nodes/xml_node'
     end

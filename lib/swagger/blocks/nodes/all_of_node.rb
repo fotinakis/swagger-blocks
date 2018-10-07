@@ -12,7 +12,7 @@ module Swagger
               r = []
               value.each { |v| r << (v.respond_to?(:as_json) ? v.as_json : v) }
               result << r
-            elsif is_swagger_2_0? && value.is_a?(Hash)
+            elsif (is_swagger_2_0? is_openapi_3_0?) && value.is_a?(Hash)
               r = {}
               value.each_pair {|k, v| r[k] = (v.respond_to?(:as_json) ? v.as_json : v) }
               result << r

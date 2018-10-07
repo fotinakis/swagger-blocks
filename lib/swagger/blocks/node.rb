@@ -24,11 +24,13 @@ module Swagger
           elsif value.is_a?(Array)
             result[key] = []
             value.each { |v| result[key] << (v.respond_to?(:as_json) ? v.as_json : v) }
-          elsif is_swagger_2_0? && value.is_a?(Hash)
+          elsif (is_swagger_2_0? || is_openapi_3_0?) && value.is_a?(Hash)
             result[key] = {}
             value.each_pair {|k, v| result[key][k] = (v.respond_to?(:as_json) ? v.as_json : v) }
           elsif is_swagger_2_0? && key.to_s.eql?('$ref') && (value.to_s !~ %r{^#/|https?://})
             result[key] = "#/definitions/#{value}"
+          elsif is_openapi_3_0? && key.to_s.eql?('$ref') && (value.to_s !~ %r{^#/|https?://})
+            result[key] = "#/components/schemas/#{value}"
           else
             result[key] = value
           end
@@ -53,11 +55,16 @@ module Swagger
       def version
         return @version if instance_variable_defined?('@version') && @version
         return '2.0' if data.has_key?(:swagger) && data[:swagger] == '2.0'
-        raise DeclarationError, "You must specify swagger '2.0'"
+        return '3.0.0' if data.has_key?(:openapi) && data[:openapi] == '3.0.0'
+        raise DeclarationError, "You must specify swagger '2.0' or openapi '3.0.0'"
       end
 
       def is_swagger_2_0?
         version == '2.0'
+      end
+
+      def is_openapi_3_0?
+        version == '3.0.0'
       end
     end
   end

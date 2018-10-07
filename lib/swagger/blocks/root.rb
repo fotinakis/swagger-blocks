@@ -19,6 +19,13 @@ module Swagger
         end
       end
 
+      if data[:root_node].is_openapi_3_0?
+        data[:root_node].key(:paths, data[:path_nodes]) # Required, so no empty check.
+        if data[:component_node] && !data[:component_node].data.empty?
+          data[:root_node].key(:components, data[:component_node])
+        end
+      end
+
       data[:root_node].as_json
     end
   end

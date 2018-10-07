@@ -13,6 +13,11 @@ module Swagger
           self.data[:headers][head] = Swagger::Blocks::Nodes::HeaderNode.call(version: version, inline_keys: inline_keys, &block)
         end
 
+        def content(type, inline_keys = nil, &block)
+          self.data[:content] ||= {}
+          self.data[:content][type] = Swagger::Blocks::Nodes::ContentNode.call(version: version, inline_keys: inline_keys, &block)
+        end
+
         def example(exam, inline_keys = nil, &block)
           # TODO validate 'exam' is as per spec
           self.data[:examples] ||= {}
