@@ -14,6 +14,11 @@ module Swagger
             self.data[:schemas][name] = Swagger::Blocks::Nodes::SchemaNode.call(version: '3.0.0', inline_keys: inline_keys, &block)
           end
         end
+
+        def link(name, inline_keys = nil, &block)
+          self.data[:links] ||= {}
+          self.data[:links][name] = Swagger::Blocks::Nodes::LinkNode.call(version: version, inline_keys: inline_keys, &block)
+        end
       end
     end
   end

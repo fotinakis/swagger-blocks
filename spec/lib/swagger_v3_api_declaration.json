@@ -64,6 +64,11 @@
                   "$ref": "#/components/schemas/Pets"
                 }
               }
+            },
+            "links": {
+              "getPetById": {
+                "$ref": "#/components/links/GetPetById"
+              }
             }
           },
           "default": {
@@ -98,7 +103,23 @@
         ],
         "responses": {
           "201": {
-            "description": "Null response"
+            "description": "New Pet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pet"
+                }
+              }
+            },
+            "links": {
+              "getPetById": {
+                "operationId": "showPetById",
+                "parameters": {
+                  "id": "$response.body#/id"
+                },
+                "description": "The `id` value returned in the response can be used as the `petId` parameter in `GET /pets/{petId}`."
+              }
+            }
           },
           "default": {
             "description": "unexpected error",
@@ -325,6 +346,14 @@
           "message": {
             "type": "string"
           }
+        }
+      }
+    },
+    "links": {
+      "GetPetById": {
+        "operationId": "showPetById",
+        "parameters": {
+          "petId": "$response.body#/id"
         }
       }
     }

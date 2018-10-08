@@ -68,6 +68,9 @@ class PetControllerV3
             key :'$ref', :Pets
           end
         end
+        link :'getPetById' do
+          key :'$ref', '#/components/links/GetPetById'
+        end
       end
       response :default do
         key :description, 'unexpected error'
@@ -94,7 +97,19 @@ class PetControllerV3
         end
       end
       response 201 do
-        key :description, 'Null response'
+        key :description, 'New Pet'
+        content :'application/json' do
+          schema do
+            key :'$ref', :Pet
+          end
+        end
+        link :getPetById do
+          key :operationId, "showPetById"
+          parameters do
+            key :id, "$response.body#/id"
+          end
+          key :description, "The `id` value returned in the response can be used as the `petId` parameter in `GET /pets/{petId}`."
+        end
       end
       response :default, description: 'unexpected error' do
         content :'application/json' do
@@ -263,6 +278,13 @@ class PetV3
       end
       property :status do
         key :type, :string
+      end
+    end
+
+    link :GetPetById do
+      key :operationId, :showPetById
+      parameters do
+        key :petId, "$response.body#/id"
       end
     end
   end

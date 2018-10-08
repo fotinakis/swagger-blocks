@@ -29,6 +29,8 @@ module Swagger
             value.each_pair {|k, v| result[key][k] = (v.respond_to?(:as_json) ? v.as_json : v) }
           elsif is_swagger_2_0? && key.to_s.eql?('$ref') && (value.to_s !~ %r{^#/|https?://})
             result[key] = "#/definitions/#{value}"
+          elsif is_openapi_3_0? && key.to_s.eql?('$ref') && self.is_a?(Swagger::Blocks::Nodes::LinkNode) && (value.to_s !~ %r{^#/|https?://})
+            result[key] = "#/components/links/#{value}"
           elsif is_openapi_3_0? && key.to_s.eql?('$ref') && (value.to_s !~ %r{^#/|https?://})
             result[key] = "#/components/schemas/#{value}"
           else
