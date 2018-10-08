@@ -28,6 +28,11 @@ module Swagger
         def request_body(inline_keys = nil, &block)
           self.data[:requestBody] = Swagger::Blocks::Nodes::RequestBodyNode.call(version: version, inline_keys: inline_keys, &block)
         end
+
+        def callback(event_name, inline_keys = nil, &block)
+          self.data[:callbacks] ||= {}
+          self.data[:callbacks][event_name] = Swagger::Blocks::Nodes::CallbackNode.call(version: version, inline_keys: inline_keys, &block)
+        end
       end
     end
   end

@@ -154,6 +154,82 @@
           }
         }
       }
+    },
+    "/pets/{petId}/purchase": {
+      "post": {
+        "summary": "Purchase a specific pet",
+        "operationId": "purchasePetById",
+        "tags": [
+          "pets"
+        ],
+        "parameters": [
+          {
+            "name": "petId",
+            "in": "path",
+            "required": true,
+            "description": "The id of the pet to retrieve",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Pet order object",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PetOrderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Expected response to a valid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PetOrder"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "callbacks": {
+          "orderUpdated": {
+            "{$request.body#/webhook_url}": {
+              "post": {
+                "requestBody": {
+                  "required": true,
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/OrderUpdated"
+                      }
+                    }
+                  }
+                },
+                "responses": {
+                  "200": {
+                    "description": "The server must return an HTTP 200, otherwise delivery will be reattempted."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -180,6 +256,60 @@
         "type": "array",
         "items": {
           "$ref": "#/components/schemas/Pet"
+        }
+      },
+      "PetOrderRequest": {
+        "required": [
+          "phone_number"
+        ],
+        "properties": {
+          "phone_number": {
+            "type": "string"
+          },
+          "webhook_url": {
+            "type": "string"
+          }
+        }
+      },
+      "PetOrder": {
+        "required": [
+          "phone_number",
+          "id",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "phone_number": {
+            "type": "string"
+          },
+          "webhook_url": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "OrderUpdated": {
+        "required": [
+          "order_id",
+          "status",
+          "phone_number"
+        ],
+        "properties": {
+          "order_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "phone_number": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
         }
       },
       "Error": {

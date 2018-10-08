@@ -9,6 +9,9 @@ module Swagger
 
     module Nodes
       autoload :AllOfNode, 'swagger/blocks/nodes/all_of_node'
+      autoload :CallbackNode, 'swagger/blocks/nodes/callback_node'
+      autoload :CallbackDestinationNode, 'swagger/blocks/nodes/callback_destination_node'
+      autoload :CallbackMethodNode, 'swagger/blocks/nodes/callback_method_node'
       autoload :ComponentNode, 'swagger/blocks/nodes/component_node'
       autoload :ContactNode, 'swagger/blocks/nodes/contact_node'
       autoload :ContentNode, 'swagger/blocks/nodes/content_node'

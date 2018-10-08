@@ -140,6 +140,68 @@ class PetControllerV3
       end
     end
   end
+
+  swagger_path '/pets/{petId}/purchase' do
+    operation :post do
+      key :summary, 'Purchase a specific pet'
+      key :operationId, 'purchasePetById'
+      key :tags, [
+        'pets'
+      ]
+      parameter do
+        key :name, :petId
+        key :in, :path
+        key :required, true
+        key :description, 'The id of the pet to retrieve'
+        schema do
+          key :type, 'string'
+        end
+      end
+      request_body do
+        key :description, "Pet order object"
+        key :required, true
+        content "application/json" do
+          schema do
+            key :'$ref', "PetOrderRequest"
+          end
+        end
+      end
+      response 201 do
+        key :description, 'Expected response to a valid request'
+        content :'application/json' do
+          schema do
+            key :'$ref', :PetOrder
+          end
+        end
+      end
+      response :default do
+        key :description, 'unexpected error'
+        content :'application/json' do
+          schema do
+            key :'$ref', :Error
+          end
+        end
+      end
+
+      callback :orderUpdated do
+        destination "{$request.body#/webhook_url}" do
+          method :post do
+            request_body do
+              key :required, true
+              content "application/json" do
+                schema do
+                  key :'$ref', :OrderUpdated
+                end
+              end
+            end
+            response 200 do
+              key :description, "The server must return an HTTP 200, otherwise delivery will be reattempted."
+            end
+          end
+        end
+      end
+    end
+  end
 end
 
 class PetV3
@@ -163,6 +225,44 @@ class PetV3
       key :type, :array
       items do
         key :'$ref', :Pet
+      end
+    end
+
+    schema :PetOrderRequest, required: [:phone_number] do
+      property :phone_number do
+        key :type, :string
+      end
+      property :webhook_url do
+        key :type, :string
+      end
+    end
+
+    schema :PetOrder, required: [:phone_number, :id, :status] do
+      property :id do
+        key :type, :integer
+        key :format, :int64
+      end
+      property :phone_number do
+        key :type, :string
+      end
+      property :webhook_url do
+        key :type, :string
+      end
+      property :status do
+        key :type, :string
+      end
+    end
+
+    schema :OrderUpdated, required: [:order_id, :status, :phone_number] do
+      property :order_id do
+        key :type, :integer
+        key :format, :int64
+      end
+      property :phone_number do
+        key :type, :string
+      end
+      property :status do
+        key :type, :string
       end
     end
   end
