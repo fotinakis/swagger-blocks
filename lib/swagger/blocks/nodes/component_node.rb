@@ -24,6 +24,11 @@ module Swagger
           self.data[:examples] ||= {}
           self.data[:examples][name] = Swagger::Blocks::Nodes::ExampleNode.call(version: version, inline_keys: inline_keys, &block)
         end
+
+        def security_scheme(name, inline_keys = nil, &block)
+          self.data[:securitySchemes] ||= {}
+          self.data[:securitySchemes][name] = Swagger::Blocks::Nodes::SecuritySchemeNode.call(version: version, inline_keys: inline_keys, &block)
+        end
       end
     end
   end

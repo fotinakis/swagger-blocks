@@ -323,6 +323,35 @@ class PetV3
       end
       key :summary, "An example cat response"
     end
+    security_scheme :BasicAuth do
+      key :type, :http
+      key :scheme, :basic
+    end
+    security_scheme :BearerAuth do
+      key :type, :http
+      key :scheme, :bearer
+    end
+    security_scheme :ApiKeyAuth do
+      key :type, :apiKey
+      key :in, :header
+      key :name, :"X-API-Key"
+    end
+    security_scheme :OpenID do
+      key :type, :openIdConnect
+      key :openIdConnectUrl, "https://example.com/.well-known/openid-configuration"
+    end
+    security_scheme :OAuth2 do
+      key :type, :oauth2
+      flow :authorizationCode do
+        key :authorizationUrl, "https://example.com/oauth/authorize"
+        key :tokenUrl, "https://example.com/oauth/token"
+        scopes do
+          key :read, "Grants read access"
+          key :write, "Grants write access"
+          key :admin, "Grants access to admin operations"
+        end
+      end
+    end
   end
 end
 

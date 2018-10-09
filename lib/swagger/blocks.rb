@@ -17,6 +17,7 @@ module Swagger
       autoload :ContentNode, 'swagger/blocks/nodes/content_node'
       autoload :ExampleNode, 'swagger/blocks/nodes/example_node'
       autoload :ExternalDocsNode, 'swagger/blocks/nodes/external_docs_node'
+      autoload :FlowNode, 'swagger/blocks/nodes/flow_node'
       autoload :HeaderNode, 'swagger/blocks/nodes/header_node'
       autoload :InfoNode, 'swagger/blocks/nodes/info_node'
       autoload :ItemsNode, 'swagger/blocks/nodes/items_node'
