@@ -31,6 +31,8 @@ module Swagger
             result[key] = "#/definitions/#{value}"
           elsif is_openapi_3_0? && key.to_s.eql?('$ref') && self.is_a?(Swagger::Blocks::Nodes::LinkNode) && (value.to_s !~ %r{^#/|https?://})
             result[key] = "#/components/links/#{value}"
+          elsif is_openapi_3_0? && key.to_s.eql?('$ref') && self.is_a?(Swagger::Blocks::Nodes::ExampleNode) && (value.to_s !~ %r{^#/|https?://})
+            result[key] = "#/components/examples/#{value}"
           elsif is_openapi_3_0? && key.to_s.eql?('$ref') && (value.to_s !~ %r{^#/|https?://})
             result[key] = "#/components/schemas/#{value}"
           else

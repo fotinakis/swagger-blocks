@@ -24,6 +24,10 @@ module Swagger
         def externalDocs(inline_keys = nil, &block)
           self.data[:externalDocs] = Swagger::Blocks::Nodes::ExternalDocsNode.call(version: version, inline_keys: inline_keys, &block)
         end
+
+        def example(inline_keys = nil, &block)
+          self.data[:example] = Swagger::Blocks::Nodes::ExampleNode.call(version: version, inline_keys: inline_keys, &block)
+        end
       end
     end
   end

@@ -62,6 +62,17 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Pets"
+                },
+                "examples": {
+                  "Rabbit": {
+                    "value": {
+                      "id": 10,
+                      "name": "Rabbit"
+                    }
+                  },
+                  "Cat": {
+                    "$ref": "#/components/examples/Cat"
+                  }
                 }
               }
             },
@@ -99,7 +110,6 @@
               "$ref": "#/components/schemas/PetInput"
             }
           }
-
         ],
         "responses": {
           "201": {
@@ -268,8 +278,14 @@
           "name": {
             "type": "string"
           },
-          "tag": {
-            "type": "string"
+          "tag_ids": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64",
+              "example": 1
+            },
+            "example": [1, 2, 3]
           }
         }
       },
@@ -277,7 +293,8 @@
         "type": "array",
         "items": {
           "$ref": "#/components/schemas/Pet"
-        }
+        },
+        "example": [{"id": 10, "name": "Rover"}, {"id": 20, "name": "Felicity"}]
       },
       "PetOrderRequest": {
         "required": [
@@ -331,6 +348,11 @@
           "status": {
             "type": "string"
           }
+        },
+        "example": {
+          "order_id": 123,
+          "phone_number": "3125556666",
+          "status": "complete"
         }
       },
       "Error": {
@@ -355,6 +377,22 @@
         "parameters": {
           "petId": "$response.body#/id"
         }
+      }
+    },
+    "examples": {
+      "PetExample": {
+        "value": {
+          "id": 1,
+          "name": "Rover"
+        },
+        "summary": "An example pet response"
+      },
+      "Cat": {
+        "value": {
+          "id": 1,
+          "name": "Felicity"
+        },
+        "summary": "An example cat response"
       }
     }
   }

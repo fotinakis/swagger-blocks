@@ -67,6 +67,15 @@ class PetControllerV3
           schema do
             key :'$ref', :Pets
           end
+          example :Rabbit do
+            value do
+              key :id, 10
+              key :name, "Rabbit"
+            end
+          end
+          example :Cat do
+            key :'$ref', :Cat
+          end
         end
         link :'getPetById' do
           key :'$ref', '#/components/links/GetPetById'
@@ -231,8 +240,14 @@ class PetV3
       property :name do
         key :type, :string
       end
-      property :tag do
-        key :type, :string
+      property :tag_ids do
+        key :type, :array
+        items do
+          key :type, :integer
+          key :format, :int64
+          key :example, 1
+        end
+        key :example, [1,2,3]
       end
     end
 
@@ -241,6 +256,7 @@ class PetV3
       items do
         key :'$ref', :Pet
       end
+      key :example, [{id: 10, name: "Rover"}, {id: 20, name: "Felicity"}]
     end
 
     schema :PetOrderRequest, required: [:phone_number] do
@@ -279,6 +295,11 @@ class PetV3
       property :status do
         key :type, :string
       end
+      example do
+        key :order_id, 123
+        key :phone_number, "3125556666"
+        key :status, "complete"
+      end
     end
 
     link :GetPetById do
@@ -286,6 +307,21 @@ class PetV3
       parameters do
         key :petId, "$response.body#/id"
       end
+    end
+
+    example :PetExample do
+      value do
+        key :id, 1
+        key :name, "Rover"
+      end
+      key :summary, "An example pet response"
+    end
+    example :Cat do
+      value do
+        key :id, 1
+        key :name, "Felicity"
+      end
+      key :summary, "An example cat response"
     end
   end
 end
