@@ -16,6 +16,22 @@
     {
       "url": "http://petstore.swagger.io/v1",
       "description": "Petstore API"
+    },
+    {
+      "url": "https://{subdomain}.site.com/{version}",
+      "description": "The main prod server",
+      "variables": {
+        "subdomain": {
+          "default": "production"
+        },
+        "version": {
+          "enum": [
+            "v1",
+            "v2"
+          ],
+          "default": "v2"
+        }
+      }
     }
   ],
   "security": [
@@ -112,17 +128,24 @@
         "tags": [
           "pets"
         ],
-        "parameters": [
-          {
-            "name": "pet",
-            "in": "body",
-            "description": "Pet to add to the store",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/PetInput"
+        "requestBody": {
+          "description": "Pet to add to the store",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "example": {
+                  "name": "Fluffy"
+                }
+              }
             }
           }
-        ],
+        },
         "responses": {
           "201": {
             "description": "New Pet",
@@ -223,6 +246,10 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/PetOrderRequest"
+              },
+              "example": {
+                "id": 10,
+                "name": "Fluffy"
               }
             }
           }

@@ -28,6 +28,19 @@ class PetControllerV3
       key :description, "Petstore API"
     end
 
+    server do
+      key :url, "https://{subdomain}.site.com/{version}"
+      key :description, "The main prod server"
+
+      variable :subdomain do
+        key :default, :production
+      end
+      variable :version do
+        key :enum, ["v1", "v2"]
+        key :default, :v2
+      end
+    end
+
     security do
       key :ApiKeyAuth, []
     end
@@ -104,13 +117,18 @@ class PetControllerV3
       key :tags, [
         'pets'
       ]
-      parameter do
-        key :name, :pet
-        key :in, :body
+      request_body do
         key :description, 'Pet to add to the store'
         key :required, true
-        schema do
-          key :'$ref', :PetInput
+        content "application/json" do
+          schema do
+            property :name do
+              key :type, :string
+            end
+            example do
+              key :name, "Fluffy"
+            end
+          end
         end
       end
       response 201 do
@@ -195,6 +213,10 @@ class PetControllerV3
         content "application/json" do
           schema do
             key :'$ref', "PetOrderRequest"
+          end
+          example do
+            key :id, 10
+            key :name, "Fluffy"
           end
         end
       end

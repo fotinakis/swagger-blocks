@@ -39,6 +39,7 @@ module Swagger
       autoload :ServerNode, 'swagger/blocks/nodes/server_node'
       autoload :TagNode, 'swagger/blocks/nodes/tag_node'
       autoload :ValueNode, 'swagger/blocks/nodes/value_node'
+      autoload :VariableNode, 'swagger/blocks/nodes/variable_node'
       autoload :XmlNode, 'swagger/blocks/nodes/xml_node'
     end
   end
