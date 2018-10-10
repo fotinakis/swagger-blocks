@@ -31,7 +31,7 @@ module Swagger
         end
 
         def security(inline_keys = nil, &block)
-          raise NotSupportedError unless is_swagger_2_0?
+          raise NotSupportedError unless is_swagger_2_0? || is_openapi_3_0?
 
           self.data[:security] ||= []
           self.data[:security] << Swagger::Blocks::Nodes::SecurityRequirementNode.call(version: version, inline_keys: inline_keys, &block)

@@ -25,6 +25,14 @@ class PetControllerV3
 
     server do
       key :url, "http://petstore.swagger.io/v1"
+      key :description, "Petstore API"
+    end
+
+    security do
+      key :ApiKeyAuth, []
+    end
+    security do
+      key :OAuth2, ["read", "write"]
     end
 
     tag do

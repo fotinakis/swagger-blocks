@@ -14,7 +14,19 @@
   },
   "servers": [
     {
-      "url": "http://petstore.swagger.io/v1"
+      "url": "http://petstore.swagger.io/v1",
+      "description": "Petstore API"
+    }
+  ],
+  "security": [
+    {
+      "ApiKeyAuth": []
+    },
+    {
+      "OAuth2": [
+        "read",
+        "write"
+      ]
     }
   ],
   "tags": [
