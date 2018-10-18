@@ -28,6 +28,11 @@ module Swagger
         def example(inline_keys = nil, &block)
           self.data[:example] = Swagger::Blocks::Nodes::ExampleNode.call(version: version, inline_keys: inline_keys, &block)
         end
+
+        def one_of(&block)
+          self.data[:oneOf] ||= []
+          self.data[:oneOf] << Swagger::Blocks::Nodes::OneOfNode.call(version: version, &block)
+        end
       end
     end
   end

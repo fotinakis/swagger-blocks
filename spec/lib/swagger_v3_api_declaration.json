@@ -57,6 +57,13 @@
   ],
   "paths": {
     "/pets": {
+      "description": "Perform actions on pet resources",
+      "servers": [
+        {
+          "url": "http://petstore.swagger.io/",
+          "description": "Petstore API (without version prefix)"
+        }
+      ],
       "get": {
         "summary": "List all pets",
         "operationId": "listPets",
@@ -73,6 +80,12 @@
               "type": "integer",
               "format": "int32"
             }
+          }
+        ],
+        "servers": [
+          {
+            "url": "http://petstore.swagger.io/2.1/",
+            "description": "Petstore API (with version 2.1 prefix)"
           }
         ],
         "responses": {
@@ -180,23 +193,55 @@
       }
     },
     "/pets/{petId}": {
+      "parameters": [
+        {
+          "name": "petId",
+          "in": "path",
+          "required": true,
+          "description": "The id of the pet to retrieve",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
       "get": {
         "summary": "Info for a specific pet",
         "operationId": "showPetById",
         "tags": [
           "pets"
         ],
-        "parameters": [
-          {
-            "name": "petId",
-            "in": "path",
-            "required": true,
-            "description": "The id of the pet to retrieve",
-            "schema": {
-              "type": "string"
+        "responses": {
+          "200": {
+            "description": "Expected response to a valid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pet"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
             }
           }
+        }
+      },
+      "put": {
+        "summary": "Replace info for a specific pet",
+        "operationId": "replacePetById",
+        "tags": [
+          "pets"
         ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/PetBody"
+        },
         "responses": {
           "200": {
             "description": "Expected response to a valid request",
@@ -225,19 +270,12 @@
       "post": {
         "summary": "Purchase a specific pet",
         "operationId": "purchasePetById",
+        "deprecated": true,
         "tags": [
           "pets"
         ],
         "parameters": [
-          {
-            "name": "petId",
-            "in": "path",
-            "required": true,
-            "description": "The id of the pet to retrieve",
-            "schema": {
-              "type": "string"
-            }
-          }
+          {"$ref": "#/components/parameters/petId"}
         ],
         "requestBody": {
           "description": "Pet order object",
@@ -245,7 +283,10 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/PetOrderRequest"
+                "oneOf": [
+                  {"$ref": "#/components/schemas/PetOrderRequest"},
+                  {"$ref": "#/components/schemas/ComplexPetOrderRequest"}
+                ]
               },
               "example": {
                 "id": 10,
@@ -410,6 +451,19 @@
         }
       }
     },
+    "requestBodies": {
+      "PetBody": {
+        "description": "A JSON object containing pet information",
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Pet"
+            }
+          }
+        }
+      }
+    },
     "links": {
       "GetPetById": {
         "operationId": "showPetById",
@@ -464,6 +518,17 @@
               "admin": "Grants access to admin operations"
             }
           }
+        }
+      }
+    },
+    "parameters": {
+      "petId": {
+        "name": "petId",
+        "in": "path",
+        "required": true,
+        "description": "The id of the pet to retrieve",
+        "schema": {
+          "type": "string"
         }
       }
     }

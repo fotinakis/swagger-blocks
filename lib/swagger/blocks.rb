@@ -24,6 +24,7 @@ module Swagger
       autoload :LicenseNode, 'swagger/blocks/nodes/license_node'
       autoload :LinkNode, 'swagger/blocks/nodes/link_node'
       autoload :LinkParameterNode, 'swagger/blocks/nodes/link_parameter_node'
+      autoload :OneOfNode, 'swagger/blocks/nodes/one_of_node'
       autoload :OperationNode, 'swagger/blocks/nodes/operation_node'
       autoload :ParameterNode, 'swagger/blocks/nodes/parameter_node'
       autoload :PathNode, 'swagger/blocks/nodes/path_node'

@@ -33,6 +33,12 @@ module Swagger
           self.data[:callbacks] ||= {}
           self.data[:callbacks][event_name] = Swagger::Blocks::Nodes::CallbackNode.call(version: version, inline_keys: inline_keys, &block)
         end
+
+        def server(inline_keys = nil, &block)
+          raise NotSupportedError unless is_openapi_3_0?
+          self.data[:servers] ||= []
+          self.data[:servers] << Swagger::Blocks::Nodes::ServerNode.call(version: version, inline_keys: inline_keys, &block)
+        end
       end
     end
   end

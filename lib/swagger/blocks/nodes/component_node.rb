@@ -29,6 +29,16 @@ module Swagger
           self.data[:securitySchemes] ||= {}
           self.data[:securitySchemes][name] = Swagger::Blocks::Nodes::SecuritySchemeNode.call(version: version, inline_keys: inline_keys, &block)
         end
+
+        def parameter(name, inline_keys = nil, &block)
+          self.data[:parameters] ||= {}
+          self.data[:parameters][name] = Swagger::Blocks::Nodes::ParameterNode.call(version: version, inline_keys: inline_keys, &block)
+        end
+
+        def request_body(name, inline_keys = nil, &block)
+          self.data[:requestBodies] ||= {}
+          self.data[:requestBodies][name] = Swagger::Blocks::Nodes::RequestBodyNode.call(version: version, inline_keys: inline_keys, &block)
+        end
       end
     end
   end

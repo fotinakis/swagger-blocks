@@ -60,6 +60,11 @@ class PetControllerV3
   end
 
   swagger_path '/pets' do
+    key :description, "Perform actions on pet resources"
+    server do
+      key :url, "http://petstore.swagger.io/"
+      key :description, "Petstore API (without version prefix)"
+    end
     operation :get do
       key :summary, 'List all pets'
       key :operationId, 'listPets'
@@ -75,6 +80,10 @@ class PetControllerV3
           key :type, :integer
           key :format, :int32
         end
+      end
+      server do
+        key :url, "http://petstore.swagger.io/2.1/"
+        key :description, "Petstore API (with version 2.1 prefix)"
       end
       response 200 do
         key :description, 'A paged array of pets'
@@ -157,20 +166,46 @@ class PetControllerV3
   end
 
   swagger_path '/pets/{petId}' do
+    parameter do
+      key :name, :petId
+      key :in, :path
+      key :required, true
+      key :description, 'The id of the pet to retrieve'
+      schema do
+        key :type, 'string'
+      end
+    end
     operation :get do
       key :summary, 'Info for a specific pet'
       key :operationId, 'showPetById'
       key :tags, [
         'pets'
       ]
-      parameter do
-        key :name, :petId
-        key :in, :path
-        key :required, true
-        key :description, 'The id of the pet to retrieve'
-        schema do
-          key :type, 'string'
+      response 200 do
+        key :description, 'Expected response to a valid request'
+        content :'application/json' do
+          schema do
+            key :'$ref', :Pet
+          end
         end
+      end
+      response :default do
+        key :description, 'unexpected error'
+        content :'application/json' do
+          schema do
+            key :'$ref', :Error
+          end
+        end
+      end
+    end
+    operation :put do
+      key :summary, 'Replace info for a specific pet'
+      key :operationId, 'replacePetById'
+      key :tags, [
+        'pets'
+      ]
+      request_body do
+        key :"$ref", :PetBody
       end
       response 200 do
         key :description, 'Expected response to a valid request'
@@ -195,24 +230,24 @@ class PetControllerV3
     operation :post do
       key :summary, 'Purchase a specific pet'
       key :operationId, 'purchasePetById'
+      key :deprecated, true
       key :tags, [
         'pets'
       ]
       parameter do
-        key :name, :petId
-        key :in, :path
-        key :required, true
-        key :description, 'The id of the pet to retrieve'
-        schema do
-          key :type, 'string'
-        end
+        key :$ref, :petId
       end
       request_body do
         key :description, "Pet order object"
         key :required, true
         content "application/json" do
           schema do
-            key :'$ref', "PetOrderRequest"
+            one_of do
+              key :'$ref', "PetOrderRequest"
+            end
+            one_of do
+              key :'$ref', "ComplexPetOrderRequest"
+            end
           end
           example do
             key :id, 10
@@ -379,6 +414,24 @@ class PetV3
           key :read, "Grants read access"
           key :write, "Grants write access"
           key :admin, "Grants access to admin operations"
+        end
+      end
+    end
+    parameter :petId do
+      key :name, :petId
+      key :in, :path
+      key :required, true
+      key :description, 'The id of the pet to retrieve'
+      schema do
+        key :type, 'string'
+      end
+    end
+    request_body :PetBody do
+      key :description, 'A JSON object containing pet information'
+      key :required, true
+      content :'application/json' do
+        schema do
+          key :'$ref', :Pet
         end
       end
     end
