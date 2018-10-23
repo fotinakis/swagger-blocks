@@ -225,6 +225,10 @@ class PetControllerV3
       end
     end
   end
+end
+
+class PetV3
+  include Swagger::Blocks
 
   swagger_path '/pets/{petId}/purchase' do
     operation :post do
@@ -291,11 +295,6 @@ class PetControllerV3
       end
     end
   end
-end
-
-class PetV3
-  include Swagger::Blocks
-
   swagger_component do
     schema :Pet, required: [:id, :name] do
       property :id do

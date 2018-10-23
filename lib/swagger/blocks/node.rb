@@ -4,6 +4,8 @@ module Swagger
     class Node
       attr_accessor :name
       attr_writer :version
+      VERSION_2 = '2.0'
+      VERSION_3 = '3.0.0'
 
       def self.call(options = {}, &block)
         # Create a new instance and evaluate the block into it.
@@ -15,30 +17,33 @@ module Swagger
         instance
       end
 
-      def as_json
-        result = {}
+      def as_json(options = {})
+        version = options.fetch(:version, '2.0')
 
+        result = {}
         self.data.each do |key, value|
           if value.is_a?(Node)
-            result[key] = value.as_json
+            result[key] = value.as_json(version: version)
           elsif value.is_a?(Array)
             result[key] = []
-            value.each { |v| result[key] << (v.respond_to?(:as_json) ? v.as_json : v) }
-          elsif (is_swagger_2_0? || is_openapi_3_0?) && value.is_a?(Hash)
+            value.each do |v|
+              result[key] << value_as_json(v, version)
+            end
+          elsif value.is_a?(Hash)
             result[key] = {}
-            value.each_pair {|k, v| result[key][k] = (v.respond_to?(:as_json) ? v.as_json : v) }
-          elsif is_openapi_3_0? && key.to_s.eql?('$ref') && self.is_a?(Swagger::Blocks::Nodes::LinkNode) && (value.to_s !~ %r{^#/|https?://})
-            result[key] = "#/components/links/#{value}"
-          elsif is_openapi_3_0? && key.to_s.eql?('$ref') && self.is_a?(Swagger::Blocks::Nodes::ExampleNode) && (value.to_s !~ %r{^#/|https?://})
-            result[key] = "#/components/examples/#{value}"
-          elsif is_openapi_3_0? && key.to_s.eql?('$ref') && self.is_a?(Swagger::Blocks::Nodes::ParameterNode) && (value.to_s !~ %r{^#/|https?://})
-            result[key] = "#/components/parameters/#{value}"
-          elsif is_openapi_3_0? && key.to_s.eql?('$ref') && self.is_a?(Swagger::Blocks::Nodes::RequestBodyNode) && (value.to_s !~ %r{^#/|https?://})
-            result[key] = "#/components/requestBodies/#{value}"
-          elsif is_openapi_3_0? && key.to_s.eql?('$ref') && (value.to_s !~ %r{^#/|https?://})
-            result[key] = "#/components/schemas/#{value}"
-          elsif is_swagger_2_0? && key.to_s.eql?('$ref') && (value.to_s !~ %r{^#/|https?://})
+            value.each_pair {|k, v| result[key][k] = value_as_json(v, version) }
+          elsif version == VERSION_2 && ref?(key) && !static_ref?(value)
             result[key] = "#/definitions/#{value}"
+          elsif version == VERSION_3 && ref?(key) && self.is_a?(Swagger::Blocks::Nodes::LinkNode) && !static_ref?(value)
+            result[key] = "#/components/links/#{value}"
+          elsif version == VERSION_3 && ref?(key) && self.is_a?(Swagger::Blocks::Nodes::ExampleNode) && !static_ref?(value)
+            result[key] = "#/components/examples/#{value}"
+          elsif version == VERSION_3 && ref?(key) && self.is_a?(Swagger::Blocks::Nodes::ParameterNode) && !static_ref?(value)
+            result[key] = "#/components/parameters/#{value}"
+          elsif version == VERSION_3 && ref?(key) && self.is_a?(Swagger::Blocks::Nodes::RequestBodyNode) && !static_ref?(value)
+            result[key] = "#/components/requestBodies/#{value}"
+          elsif version == VERSION_3 && ref?(key) && !static_ref?(value)
+            result[key] = "#/components/schemas/#{value}"
           else
             result[key] = value
           end
@@ -46,6 +51,22 @@ module Swagger
         return result if !name
         # If 'name' is given to this node, wrap the data with a root element with the given name.
         {name => result}
+      end
+
+      def ref?(key)
+        key.to_s.eql?('$ref')
+      end
+
+      def static_ref?(value)
+        value.to_s =~ %r{^#/|https?://}
+      end
+
+      def value_as_json(value, version)
+        if value.respond_to?(:as_json)
+           value.as_json(version: version)
+        else
+           value
+        end
       end
 
       def data

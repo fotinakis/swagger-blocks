@@ -26,7 +26,7 @@ module Swagger
         end
       end
 
-      data[:root_node].as_json
+      data[:root_node].as_json(version: data[:root_node].version)
     end
   end
 end
