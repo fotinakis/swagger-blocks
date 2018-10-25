@@ -11,6 +11,11 @@ module Swagger
           self.data[:properties].version = version
           self.data[:properties].property(name, inline_keys, &block)
         end
+
+        def one_of(&block)
+          self.data[:oneOf] ||= []
+          self.data[:oneOf] << Swagger::Blocks::Nodes::OneOfNode.call(version: version, &block)
+        end
       end
     end
   end
