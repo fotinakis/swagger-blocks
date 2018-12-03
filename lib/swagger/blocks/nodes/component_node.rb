@@ -39,6 +39,11 @@ module Swagger
           self.data[:requestBodies] ||= {}
           self.data[:requestBodies][name] = Swagger::Blocks::Nodes::RequestBodyNode.call(version: version, inline_keys: inline_keys, &block)
         end
+
+        def response(name, inline_keys = nil, &block)
+          self.data[:responses] ||= {}
+          self.data[:responses][name] = Swagger::Blocks::Nodes::ResponseNode.call(version: version, inline_keys: inline_keys, &block)
+        end
       end
     end
   end

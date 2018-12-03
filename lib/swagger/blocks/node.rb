@@ -42,6 +42,8 @@ module Swagger
             result[key] = "#/components/parameters/#{value}"
           elsif version == VERSION_3 && ref?(key) && self.is_a?(Swagger::Blocks::Nodes::RequestBodyNode) && !static_ref?(value)
             result[key] = "#/components/requestBodies/#{value}"
+          elsif version == VERSION_3 && ref?(key) && self.is_a?(Swagger::Blocks::Nodes::ResponseNode) && !static_ref?(value)
+            result[key] = "#/components/responses/#{value}"
           elsif version == VERSION_3 && ref?(key) && !static_ref?(value)
             result[key] = "#/components/schemas/#{value}"
           else

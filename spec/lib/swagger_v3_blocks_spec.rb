@@ -208,12 +208,7 @@ class PetControllerV3
         key :"$ref", :PetBody
       end
       response 200 do
-        key :description, 'Expected response to a valid request'
-        content :'application/json' do
-          schema do
-            key :'$ref', :Pet
-          end
-        end
+        key :'$ref', :ReplacePetBodyResponse
       end
       response :default do
         key :description, 'unexpected error'
@@ -428,6 +423,14 @@ class PetV3
     request_body :PetBody do
       key :description, 'A JSON object containing pet information'
       key :required, true
+      content :'application/json' do
+        schema do
+          key :'$ref', :Pet
+        end
+      end
+    end
+    response :ReplacePetBodyResponse do
+      key :description, 'Expected response to a valid request'
       content :'application/json' do
         schema do
           key :'$ref', :Pet

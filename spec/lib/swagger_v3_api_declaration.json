@@ -244,14 +244,7 @@
         },
         "responses": {
           "200": {
-            "description": "Expected response to a valid request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Pet"
-                }
-              }
-            }
+            "$ref": "#/components/responses/ReplacePetBodyResponse"
           },
           "default": {
             "description": "unexpected error",
@@ -455,6 +448,18 @@
       "PetBody": {
         "description": "A JSON object containing pet information",
         "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Pet"
+            }
+          }
+        }
+      }
+    },
+    "responses" : {
+      "ReplacePetBodyResponse": {
+        "description": "Expected response to a valid request",
         "content": {
           "application/json": {
             "schema": {
