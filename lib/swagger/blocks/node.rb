@@ -18,7 +18,7 @@ module Swagger
       end
 
       def as_json(options = {})
-        version = options.fetch(:version, '2.0')
+        version = options.fetch(:version, VERSION_2)
 
         result = {}
         self.data.each do |key, value|
@@ -85,17 +85,17 @@ module Swagger
 
       def version
         return @version if instance_variable_defined?('@version') && @version
-        return '2.0' if data.has_key?(:swagger) && data[:swagger] == '2.0'
-        return '3.0.0' if data.has_key?(:openapi) && data[:openapi] == '3.0.0'
-        raise DeclarationError, "You must specify swagger '2.0' or openapi '3.0.0'"
+        return VERSION_2 if data.has_key?(:swagger) && data[:swagger] == VERSION_2
+        return VERSION_3 if data.has_key?(:openapi) && data[:openapi] == VERSION_3
+        raise DeclarationError, "You must specify swagger '#{VERSION_2}' or openapi '#{VERSION_3}'"
       end
 
       def is_swagger_2_0?
-        version == '2.0'
+        version == VERSION_2
       end
 
       def is_openapi_3_0?
-        version == '3.0.0'
+        version == VERSION_3
       end
     end
   end
