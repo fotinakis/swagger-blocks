@@ -80,6 +80,14 @@ class PetControllerV3
           key :type, :integer
           key :format, :int32
         end
+        example :large do
+          key :value, 100
+          key :summary, "Return a maximum of 100 results"
+        end
+        example :small do
+          key :value, 5
+          key :summary, "Return a maximum of 5 results"
+        end
       end
       server do
         key :url, "http://petstore.swagger.io/2.1/"

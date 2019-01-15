@@ -79,6 +79,16 @@
             "schema": {
               "type": "integer",
               "format": "int32"
+            },
+            "examples": {
+              "large": {
+                "value": 100,
+                "summary": "Return a maximum of 100 results"
+              },
+              "small": {
+                "value": 5,
+                "summary": "Return a maximum of 5 results"
+              }
             }
           }
         ],
