@@ -42,6 +42,7 @@ module Swagger
       autoload :ValueNode, 'swagger/blocks/nodes/value_node'
       autoload :VariableNode, 'swagger/blocks/nodes/variable_node'
       autoload :XmlNode, 'swagger/blocks/nodes/xml_node'
+      autoload :VenderExtensionNode, 'swagger/blocks/nodes/vendor_extension_node'
     end
   end
 end

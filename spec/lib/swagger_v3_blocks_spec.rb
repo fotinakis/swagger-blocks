@@ -48,6 +48,11 @@ class PetControllerV3
       key :OAuth2, ["read", "write"]
     end
 
+    x :tagGroups do
+      key :name, 'Pets'
+      key :tags, %w[dogs cats]
+    end
+
     tag do
       key :name, "dogs"
       key :description, "Dogs"
@@ -479,6 +484,7 @@ describe 'Swagger::Blocks v3' do
 
       # Multiple expectations for better test diff output.
       expect(actual['info']).to eq(data['info'])
+      expect(actual['x-tagGroups']).to eq(data['x-tagGroups'])
       expect(actual['paths']).to be
       expect(actual['paths']['/pets']).to be
       expect(actual['paths']['/pets']).to eq(data['paths']['/pets'])
