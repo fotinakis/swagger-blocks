@@ -27,7 +27,13 @@ module Swagger
           end
           if swagger_nodes[:component_node]
             if component_node
-              component_node.data[:schemas].merge!(swagger_nodes[:component_node].data[:schemas])
+              merge_components(component_node, swagger_nodes, :examples)
+              merge_components(component_node, swagger_nodes, :links)
+              merge_components(component_node, swagger_nodes, :parameters)
+              merge_components(component_node, swagger_nodes, :requestBodies)
+              merge_components(component_node, swagger_nodes, :responses)
+              merge_components(component_node, swagger_nodes, :schemas)
+              merge_components(component_node, swagger_nodes, :securitySchemes)
             else
               component_node = swagger_nodes[:component_node]
             end
@@ -47,6 +53,11 @@ module Swagger
           data[:models_nodes] = models_nodes
         end
         data
+      end
+
+      def self.merge_components(component_node, swagger_nodes, key)
+        component_node.data[key] ||= {}
+        component_node.data[key].merge!(swagger_nodes[:component_node].data[key]) if swagger_nodes[:component_node].data[key]
       end
 
       # Make sure there is exactly one root_node and return it.

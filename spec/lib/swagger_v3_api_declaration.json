@@ -249,6 +249,31 @@
           }
         }
       },
+      "post": {
+        "summary": "Update info for a specific pet",
+        "operationId": "updatePetById",
+        "tags": [
+          "pets"
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/PetBody"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/UpdatePetBodyResponse"
+          },
+          "default": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
       "put": {
         "summary": "Replace info for a specific pet",
         "operationId": "replacePetById",
@@ -474,6 +499,16 @@
       }
     },
     "responses" : {
+      "UpdatePetBodyResponse": {
+        "description": "Expected response to a valid request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Pet"
+            }
+          }
+        }
+      },
       "ReplacePetBodyResponse": {
         "description": "Expected response to a valid request",
         "content": {

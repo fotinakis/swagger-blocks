@@ -211,6 +211,27 @@ class PetControllerV3
         end
       end
     end
+    operation :post do
+      key :summary, 'Update info for a specific pet'
+      key :operationId, 'updatePetById'
+      key :tags, [
+        'pets'
+      ]
+      request_body do
+        key :"$ref", :PetBody
+      end
+      response 200 do
+        key :'$ref', :UpdatePetBodyResponse
+      end
+      response :default do
+        key :description, 'unexpected error'
+        content :'application/json' do
+          schema do
+            key :'$ref', :Error
+          end
+        end
+      end
+    end
     operation :put do
       key :summary, 'Replace info for a specific pet'
       key :operationId, 'replacePetById'
@@ -388,13 +409,6 @@ class PetV3
       end
       key :summary, "An example pet response"
     end
-    example :Cat do
-      value do
-        key :id, 1
-        key :name, "Felicity"
-      end
-      key :summary, "An example cat response"
-    end
     security_scheme :BasicAuth do
       key :type, :http
       key :scheme, :basic
@@ -411,18 +425,6 @@ class PetV3
     security_scheme :OpenID do
       key :type, :openIdConnect
       key :openIdConnectUrl, "https://example.com/.well-known/openid-configuration"
-    end
-    security_scheme :OAuth2 do
-      key :type, :oauth2
-      flow :authorizationCode do
-        key :authorizationUrl, "https://example.com/oauth/authorize"
-        key :tokenUrl, "https://example.com/oauth/token"
-        scopes do
-          key :read, "Grants read access"
-          key :write, "Grants write access"
-          key :admin, "Grants access to admin operations"
-        end
-      end
     end
     parameter :petId do
       key :name, :petId
@@ -470,13 +472,48 @@ class ErrorModelV3
   end
 end
 
+class AuxiliaryModelV3
+  include Swagger::Blocks
+
+  swagger_component do
+    response :UpdatePetBodyResponse do
+      key :description, 'Expected response to a valid request'
+      content :'application/json' do
+        schema do
+          key :'$ref', :Pet
+        end
+      end
+    end
+    example :Cat do
+      value do
+        key :id, 1
+        key :name, "Felicity"
+      end
+      key :summary, "An example cat response"
+    end
+    security_scheme :OAuth2 do
+      key :type, :oauth2
+      flow :authorizationCode do
+        key :authorizationUrl, "https://example.com/oauth/authorize"
+        key :tokenUrl, "https://example.com/oauth/token"
+        scopes do
+          key :read, "Grants read access"
+          key :write, "Grants write access"
+          key :admin, "Grants access to admin operations"
+        end
+      end
+    end
+  end
+end
+
 describe 'Swagger::Blocks v3' do
   describe 'build_json' do
     it 'outputs the correct data' do
       swaggered_classes = [
         PetControllerV3,
         PetV3,
-        ErrorModelV3
+        ErrorModelV3,
+        AuxiliaryModelV3
       ]
       actual = Swagger::Blocks.build_root_json(swaggered_classes)
       actual = JSON.parse(actual.to_json)  # For access consistency.
@@ -495,17 +532,20 @@ describe 'Swagger::Blocks v3' do
       expect(actual['components']).to eq(data['components'])
       expect(actual).to eq(data)
     end
+
     it 'is idempotent' do
-      swaggered_classes = [PetControllerV3, PetV3, ErrorModelV3]
+      swaggered_classes = [PetControllerV3, PetV3, ErrorModelV3, AuxiliaryModelV3]
       actual = JSON.parse(Swagger::Blocks.build_root_json(swaggered_classes).to_json)
       data = JSON.parse(RESOURCE_LISTING_JSON_V3)
       expect(actual).to eq(data)
     end
+
     it 'errors if no swagger_root is declared' do
       expect {
         Swagger::Blocks.build_root_json([])
       }.to raise_error(Swagger::Blocks::DeclarationError)
     end
+
     it 'errors if multiple swagger_roots are declared' do
       expect {
         Swagger::Blocks.build_root_json([PetControllerV3, PetControllerV3])
