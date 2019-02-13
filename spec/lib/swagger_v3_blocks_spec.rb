@@ -325,7 +325,7 @@ class PetV3
     end
   end
   swagger_component do
-    schema :Pet, required: %i[id name] do
+    schema :Pet, required: [:id, :name] do
       property :id do
         key :type, :integer
         key :format, :int64
@@ -361,7 +361,7 @@ class PetV3
       end
     end
 
-    schema :PetOrder, required: %i[phone_number id status] do
+    schema :PetOrder, required: [:phone_number, :id, :status] do
       property :id do
         key :type, :integer
         key :format, :int64
@@ -377,7 +377,7 @@ class PetV3
       end
     end
 
-    schema :OrderUpdated, required: %i[order_id status phone_number] do
+    schema :OrderUpdated, required: [:order_id, :status, :phone_number] do
       property :order_id do
         key :type, :integer
         key :format, :int64
@@ -460,7 +460,7 @@ class ErrorModelV3
 
   swagger_component do
     schema :Error do
-      key :required, %i[code message]
+      key :required, [:code, :message]
       property :code do
         key :type, :integer
         key :format, :int32
