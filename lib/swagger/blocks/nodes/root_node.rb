@@ -50,15 +50,16 @@ module Swagger
 
         def server(inline_keys = nil, &block)
           raise NotSupportedError unless is_openapi_3_0?
+
           self.data[:servers] ||= []
           self.data[:servers] << Swagger::Blocks::Nodes::ServerNode.call(version: version, inline_keys: inline_keys, &block)
         end
 
-        def x(name, inline_keys = nil, &block)
+        def extension(name, inline_keys = nil, &block)
           raise NotSupportedError unless is_openapi_3_0?
 
           self.data["x-#{name}".to_sym] ||= []
-          self.data["x-#{name}".to_sym] << Swagger::Blocks::Nodes::VenderExtensionNode.call(version: version, inline_keys: inline_keys, &block)
+          self.data["x-#{name}".to_sym] << Swagger::Blocks::Nodes::VendorExtensionNode.call(version: version, inline_keys: inline_keys, &block)
         end
 
         # Use 'tag' instead.

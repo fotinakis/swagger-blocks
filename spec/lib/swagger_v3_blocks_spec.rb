@@ -48,7 +48,7 @@ class PetControllerV3
       key :OAuth2, ["read", "write"]
     end
 
-    x :tagGroups do
+    extension :tagGroups do
       key :name, 'Pets'
       key :tags, %w[dogs cats]
     end
