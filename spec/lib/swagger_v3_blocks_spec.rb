@@ -36,7 +36,7 @@ class PetControllerV3
         key :default, :production
       end
       variable :version do
-        key :enum, %w[v1 v2]
+        key :enum, ['v1', 'v2']
         key :default, :v2
       end
     end
@@ -45,12 +45,12 @@ class PetControllerV3
       key :ApiKeyAuth, []
     end
     security do
-      key :OAuth2, %w[read write]
+      key :OAuth2, ['read', 'write']
     end
 
     extension :tagGroups do
       key :name, 'Pets'
-      key :tags, %w[dogs cats]
+      key :tags, ['dogs', 'cats']
     end
 
     tag do
