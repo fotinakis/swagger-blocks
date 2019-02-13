@@ -3,7 +3,7 @@ require 'swagger/blocks'
 
 # TODO: Test data originally based on the Swagger UI example data
 
-RESOURCE_LISTING_JSON_V3 = File.open(File.expand_path('swagger_v3_api_declaration.json', __dir__)).read
+RESOURCE_LISTING_JSON_V3 = File.open(File.expand_path('../swagger_v3_api_declaration.json', __FILE__)).read
 
 class PetControllerV3
   include Swagger::Blocks
