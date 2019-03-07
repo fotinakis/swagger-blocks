@@ -45,6 +45,12 @@
       ]
     }
   ],
+  "x-tagGroups": [
+    {
+      "name": "Pets",
+      "tags": ["dogs", "cats"]
+    }
+  ],
   "tags": [
     {
       "name": "dogs",

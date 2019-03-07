@@ -1,7 +1,7 @@
 require 'json'
 require 'swagger/blocks'
 
-# TODO Test data originally based on the Swagger UI example data
+# TODO: Test data originally based on the Swagger UI example data
 
 RESOURCE_LISTING_JSON_V3 = open(File.expand_path('../swagger_v3_api_declaration.json', __FILE__)).read
 
@@ -24,19 +24,19 @@ class PetControllerV3
     end
 
     server do
-      key :url, "http://petstore.swagger.io/v1"
-      key :description, "Petstore API"
+      key :url, 'http://petstore.swagger.io/v1'
+      key :description, 'Petstore API'
     end
 
     server do
-      key :url, "https://{subdomain}.site.com/{version}"
-      key :description, "The main prod server"
+      key :url, 'https://{subdomain}.site.com/{version}'
+      key :description, 'The main prod server'
 
       variable :subdomain do
         key :default, :production
       end
       variable :version do
-        key :enum, ["v1", "v2"]
+        key :enum, ['v1', 'v2']
         key :default, :v2
       end
     end
@@ -45,25 +45,30 @@ class PetControllerV3
       key :ApiKeyAuth, []
     end
     security do
-      key :OAuth2, ["read", "write"]
+      key :OAuth2, ['read', 'write']
+    end
+
+    extension :'x-tagGroups' do
+      key :name, 'Pets'
+      key :tags, ['dogs', 'cats']
     end
 
     tag do
-      key :name, "dogs"
-      key :description, "Dogs"
+      key :name, 'dogs'
+      key :description, 'Dogs'
     end
 
     tag do
-      key :name, "cats"
-      key :description, "Cats"
+      key :name, 'cats'
+      key :description, 'Cats'
     end
   end
 
   swagger_path '/pets' do
-    key :description, "Perform actions on pet resources"
+    key :description, 'Perform actions on pet resources'
     server do
-      key :url, "http://petstore.swagger.io/"
-      key :description, "Petstore API (without version prefix)"
+      key :url, 'http://petstore.swagger.io/'
+      key :description, 'Petstore API (without version prefix)'
     end
     operation :get do
       key :summary, 'List all pets'
@@ -82,16 +87,16 @@ class PetControllerV3
         end
         example :large do
           key :value, 100
-          key :summary, "Return a maximum of 100 results"
+          key :summary, 'Return a maximum of 100 results'
         end
         example :small do
           key :value, 5
-          key :summary, "Return a maximum of 5 results"
+          key :summary, 'Return a maximum of 5 results'
         end
       end
       server do
-        key :url, "http://petstore.swagger.io/2.1/"
-        key :description, "Petstore API (with version 2.1 prefix)"
+        key :url, 'http://petstore.swagger.io/2.1/'
+        key :description, 'Petstore API (with version 2.1 prefix)'
       end
       response 200 do
         key :description, 'A paged array of pets'
@@ -108,14 +113,14 @@ class PetControllerV3
           example :Rabbit do
             value do
               key :id, 10
-              key :name, "Rabbit"
+              key :name, 'Rabbit'
             end
           end
           example :Cat do
             key :'$ref', :Cat
           end
         end
-        link :'getPetById' do
+        link :getPetById do
           key :'$ref', '#/components/links/GetPetById'
         end
       end
@@ -137,13 +142,13 @@ class PetControllerV3
       request_body do
         key :description, 'Pet to add to the store'
         key :required, true
-        content "application/json" do
+        content 'application/json' do
           schema do
             property :name do
               key :type, :string
             end
             example do
-              key :name, "Fluffy"
+              key :name, 'Fluffy'
             end
           end
         end
@@ -156,11 +161,11 @@ class PetControllerV3
           end
         end
         link :getPetById do
-          key :operationId, "showPetById"
+          key :operationId, 'showPetById'
           parameters do
-            key :id, "$response.body#/id"
+            key :id, '$response.body#/id'
           end
-          key :description, "The `id` value returned in the response can be used as the `petId` parameter in `GET /pets/{petId}`."
+          key :description, 'The `id` value returned in the response can be used as the `petId` parameter in `GET /pets/{petId}`.'
         end
       end
       response :default, description: 'unexpected error' do
@@ -266,20 +271,20 @@ class PetV3
         key :$ref, :petId
       end
       request_body do
-        key :description, "Pet order object"
+        key :description, 'Pet order object'
         key :required, true
-        content "application/json" do
+        content 'application/json' do
           schema do
             one_of do
-              key :'$ref', "PetOrderRequest"
+              key :'$ref', 'PetOrderRequest'
             end
             one_of do
-              key :'$ref', "ComplexPetOrderRequest"
+              key :'$ref', 'ComplexPetOrderRequest'
             end
           end
           example do
             key :id, 10
-            key :name, "Fluffy"
+            key :name, 'Fluffy'
           end
         end
       end
@@ -301,18 +306,18 @@ class PetV3
       end
 
       callback :orderUpdated do
-        destination "{$request.body#/webhook_url}" do
+        destination '{$request.body#/webhook_url}' do
           method :post do
             request_body do
               key :required, true
-              content "application/json" do
+              content 'application/json' do
                 schema do
                   key :'$ref', :OrderUpdated
                 end
               end
             end
             response 200 do
-              key :description, "The server must return an HTTP 200, otherwise delivery will be reattempted."
+              key :description, 'The server must return an HTTP 200, otherwise delivery will be reattempted.'
             end
           end
         end
@@ -335,7 +340,7 @@ class PetV3
           key :format, :int64
           key :example, 1
         end
-        key :example, [1,2,3]
+        key :example, [1, 2, 3]
       end
     end
 
@@ -344,7 +349,7 @@ class PetV3
       items do
         key :'$ref', :Pet
       end
-      key :example, [{id: 10, name: "Rover"}, {id: 20, name: "Felicity"}]
+      key :example, [{ id: 10, name: 'Rover' }, { id: 20, name: 'Felicity' }]
     end
 
     schema :PetOrderRequest, required: [:phone_number] do
@@ -385,24 +390,24 @@ class PetV3
       end
       example do
         key :order_id, 123
-        key :phone_number, "3125556666"
-        key :status, "complete"
+        key :phone_number, '3125556666'
+        key :status, 'complete'
       end
     end
 
     link :GetPetById do
       key :operationId, :showPetById
       parameters do
-        key :petId, "$response.body#/id"
+        key :petId, '$response.body#/id'
       end
     end
 
     example :PetExample do
       value do
         key :id, 1
-        key :name, "Rover"
+        key :name, 'Rover'
       end
-      key :summary, "An example pet response"
+      key :summary, 'An example pet response'
     end
     security_scheme :BasicAuth do
       key :type, :http
@@ -419,7 +424,7 @@ class PetV3
     end
     security_scheme :OpenID do
       key :type, :openIdConnect
-      key :openIdConnectUrl, "https://example.com/.well-known/openid-configuration"
+      key :openIdConnectUrl, 'https://example.com/.well-known/openid-configuration'
     end
     parameter :petId do
       key :name, :petId
@@ -482,19 +487,19 @@ class AuxiliaryModelV3
     example :Cat do
       value do
         key :id, 1
-        key :name, "Felicity"
+        key :name, 'Felicity'
       end
-      key :summary, "An example cat response"
+      key :summary, 'An example cat response'
     end
     security_scheme :OAuth2 do
       key :type, :oauth2
       flow :authorizationCode do
-        key :authorizationUrl, "https://example.com/oauth/authorize"
-        key :tokenUrl, "https://example.com/oauth/token"
+        key :authorizationUrl, 'https://example.com/oauth/authorize'
+        key :tokenUrl, 'https://example.com/oauth/token'
         scopes do
-          key :read, "Grants read access"
-          key :write, "Grants write access"
-          key :admin, "Grants access to admin operations"
+          key :read, 'Grants read access'
+          key :write, 'Grants write access'
+          key :admin, 'Grants access to admin operations'
         end
       end
     end
@@ -511,11 +516,12 @@ describe 'Swagger::Blocks v3' do
         AuxiliaryModelV3
       ]
       actual = Swagger::Blocks.build_root_json(swaggered_classes)
-      actual = JSON.parse(actual.to_json)  # For access consistency.
+      actual = JSON.parse(actual.to_json) # For access consistency.
       data = JSON.parse(RESOURCE_LISTING_JSON_V3)
 
       # Multiple expectations for better test diff output.
       expect(actual['info']).to eq(data['info'])
+      expect(actual['x-tagGroups']).to eq(data['x-tagGroups'])
       expect(actual['paths']).to be
       expect(actual['paths']['/pets']).to be
       expect(actual['paths']['/pets']).to eq(data['paths']['/pets'])
@@ -535,15 +541,15 @@ describe 'Swagger::Blocks v3' do
     end
 
     it 'errors if no swagger_root is declared' do
-      expect {
+      expect do
         Swagger::Blocks.build_root_json([])
-      }.to raise_error(Swagger::Blocks::DeclarationError)
+      end.to raise_error(Swagger::Blocks::DeclarationError)
     end
 
     it 'errors if multiple swagger_roots are declared' do
-      expect {
+      expect do
         Swagger::Blocks.build_root_json([PetControllerV3, PetControllerV3])
-      }.to raise_error(Swagger::Blocks::DeclarationError)
+      end.to raise_error(Swagger::Blocks::DeclarationError)
     end
   end
 end
