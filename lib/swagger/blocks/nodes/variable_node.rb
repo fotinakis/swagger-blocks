@@ -1,7 +1,7 @@
 module Swagger
   module Blocks
     module Nodes
-      class ScopesNode < Node
+      class VariableNode < Node
       end
     end
   end

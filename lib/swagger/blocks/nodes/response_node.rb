@@ -13,10 +13,23 @@ module Swagger
           self.data[:headers][head] = Swagger::Blocks::Nodes::HeaderNode.call(version: version, inline_keys: inline_keys, &block)
         end
 
-        def example(exam, inline_keys = nil, &block)
-          # TODO validate 'exam' is as per spec
-          self.data[:examples] ||= {}
-          self.data[:examples][exam] = Swagger::Blocks::Nodes::ExampleNode.call(version: version, inline_keys: inline_keys, &block)
+        def content(type, inline_keys = nil, &block)
+          self.data[:content] ||= {}
+          self.data[:content][type] = Swagger::Blocks::Nodes::ContentNode.call(version: version, inline_keys: inline_keys, &block)
+        end
+
+        def example(name = nil, inline_keys = nil, &block)
+          if name.nil?
+            self.data[:example] = Swagger::Blocks::Nodes::ExampleNode.call(version: version, inline_keys: inline_keys, &block)
+          else
+            self.data[:examples] ||= {}
+            self.data[:examples][name] = Swagger::Blocks::Nodes::ExampleNode.call(version: version, inline_keys: inline_keys, &block)
+          end
+        end
+
+        def link(name, inline_keys = nil, &block)
+          self.data[:links] ||= {}
+          self.data[:links][name] = Swagger::Blocks::Nodes::LinkNode.call(version: version, inline_keys: inline_keys, &block)
         end
       end
     end

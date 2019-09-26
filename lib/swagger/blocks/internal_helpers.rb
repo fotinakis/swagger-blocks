@@ -10,6 +10,8 @@ module Swagger
 
         path_node_map = {}
         schema_node_map = {}
+        component_node = nil
+
         swaggered_classes.each do |swaggered_class|
           next unless swaggered_class.respond_to?(:_swagger_nodes, true)
           swagger_nodes = swaggered_class.send(:_swagger_nodes)
@@ -23,16 +25,39 @@ module Swagger
           if swagger_nodes[:schema_node_map]
             schema_node_map.merge!(swagger_nodes[:schema_node_map])
           end
+          if swagger_nodes[:component_node]
+            if component_node
+              merge_components(component_node, swagger_nodes, :examples)
+              merge_components(component_node, swagger_nodes, :links)
+              merge_components(component_node, swagger_nodes, :parameters)
+              merge_components(component_node, swagger_nodes, :requestBodies)
+              merge_components(component_node, swagger_nodes, :responses)
+              merge_components(component_node, swagger_nodes, :schemas)
+              merge_components(component_node, swagger_nodes, :securitySchemes)
+            else
+              component_node = swagger_nodes[:component_node]
+            end
+          end
         end
+
         data = {root_node: self.limit_root_node(root_nodes)}
+
         if data[:root_node].is_swagger_2_0?
           data[:path_nodes] = path_node_map
           data[:schema_nodes] = schema_node_map
+        elsif data[:root_node].is_openapi_3_0?
+          data[:path_nodes] = path_node_map
+          data[:component_node] = component_node
         else
           data[:api_node_map] = api_node_map
           data[:models_nodes] = models_nodes
         end
         data
+      end
+
+      def self.merge_components(component_node, swagger_nodes, key)
+        component_node.data[key] ||= {}
+        component_node.data[key].merge!(swagger_nodes[:component_node].data[key]) if swagger_nodes[:component_node].data[key]
       end
 
       # Make sure there is exactly one root_node and return it.

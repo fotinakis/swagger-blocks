@@ -9,6 +9,14 @@ module Swagger
         @swagger_root_node ||= Swagger::Blocks::Nodes::RootNode.call(inline_keys: inline_keys, &block)
       end
 
+      def version
+        if defined?(@swagger_root_node) && @swagger_root_node.data[:info] && @swagger_root_node.data[:info].version == '3.0.0'
+          '3.0.0'
+        else
+          '2.0'
+        end
+      end
+
       # v2.0: Defines a Swagger Path Item object
       # https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#path-item-object
       def swagger_path(path, &block)
@@ -25,7 +33,7 @@ module Swagger
           path_node.instance_eval(&block)
         else
           # First time we've seen this path
-          @swagger_path_node_map[path] = Swagger::Blocks::Nodes::PathNode.call(version: '2.0', &block)
+          @swagger_path_node_map[path] = Swagger::Blocks::Nodes::PathNode.call(version: version, &block)
         end
       end
 
@@ -41,8 +49,12 @@ module Swagger
           schema_node.instance_eval(&block)
         else
           # First time we've seen this schema_node
-          @swagger_schema_node_map[name] = Swagger::Blocks::Nodes::SchemaNode.call(version: '2.0', inline_keys: inline_keys, &block)
+          @swagger_schema_node_map[name] = Swagger::Blocks::Nodes::SchemaNode.call(version: version, inline_keys: inline_keys, &block)
         end
+      end
+
+      def swagger_component(inline_keys = nil, &block)
+        @swagger_components_node ||= Swagger::Blocks::Nodes::ComponentNode.call(version: '3.0.0', inline_keys: inline_keys, &block)
       end
 
       def _swagger_nodes
@@ -52,12 +64,14 @@ module Swagger
         @swagger_schema_node_map ||= nil
         @swagger_api_root_node_map ||= {}
         @swagger_models_node ||= nil
+        @swagger_components_node ||= nil
 
         data = {root_node: @swagger_root_node}
         data[:path_node_map] = @swagger_path_node_map
         data[:schema_node_map] = @swagger_schema_node_map
         data[:api_node_map] = @swagger_api_root_node_map
         data[:models_node] = @swagger_models_node
+        data[:component_node] = @swagger_components_node
         data
       end
     end
