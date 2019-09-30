@@ -289,7 +289,17 @@ SWAGGERED_CLASSES = [
 
 If you are receiving a "swagger_root must be declared" error make sure you are including "self" in your SWAGGERED_CLASSES definition, as shown above.
 
-Now, simply point Swagger UI at `/apidocs` and everything should Just Work™. If you change any of the Swagger block definitions, you can simply refresh Swagger UI to see the changes.
+Now, you should clone the Swagger UI repo if you have not already into your project's public directory:
+```
+$ cd public
+$ git clone https://github.com/swagger-api/swagger-ui.git
+```
+Now that you have Swagger UI installed, you'll want to edit routes.rb to create url's for the documentation. In config/routes.rb add 
+```Ruby
+get '/api' => redirect('/swagger-ui/dist/index.html?url=http://localhost:3000/apidocs')
+resources :apidocs, only: [:index]
+```
+The first route here is the URL to hit the API using Swagger UI which you just installed. Note that you should change the url parameter to the url you are using (here I'm using localhost port 3000). The second route creates the json documentation file. The first route takes the second route as a parameter, as you want to specify to Swagger UI where the documentation file is, so make sure the parameter for the first route always matches the second route. Now, if you run your server and go to ```/apidocs``` you should see the generated documentation. If you change any of the Swagger block definitions, you can simply refresh Swagger UI to see the changes.
 
 ### Security handling
 
