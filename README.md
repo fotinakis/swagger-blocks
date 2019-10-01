@@ -31,7 +31,7 @@ Or install directly with `gem install swagger-blocks`.
 
 ## Swagger 2.0 example (Rails)
 
-This is a simplified example based on the objects in the Petstore [Swagger Sample App](http://petstore.swagger.wordnik.com/#!/pet). For a more complex and complete example, see the [swagger_v2_blocks_spec.rb](https://github.com/fotinakis/swagger-blocks/blob/master/spec/lib/swagger_v2_blocks_spec.rb) file.
+This is a simplified example based on the objects in the Petstore [Swagger Sample App](http://petstore.swagger.io/). For a more complex and complete example, see the [swagger_v2_blocks_spec.rb](https://github.com/fotinakis/swagger-blocks/blob/master/spec/lib/swagger_v2_blocks_spec.rb) file.
 
 Also note that **Rails is not required**, you can use Swagger::Blocks in plain Ruby objects.
 
