@@ -25,15 +25,15 @@ module Swagger
         # TODO enforce that path name begins with a '/'
         #   (or x- , but need to research Vendor Extensions first)
 
-        @swagger_path_node_map ||= {}
+        @@swagger_path_node_map ||= {}
 
-        path_node = @swagger_path_node_map[path]
+        path_node = @@swagger_path_node_map[path]
         if path_node
           # Merge this path declaration into the previous one
           path_node.instance_eval(&block)
         else
           # First time we've seen this path
-          @swagger_path_node_map[path] = Swagger::Blocks::Nodes::PathNode.call(version: version, &block)
+          @@swagger_path_node_map[path] = Swagger::Blocks::Nodes::PathNode.call(version: version, &block)
         end
       end
 
@@ -60,14 +60,14 @@ module Swagger
       def _swagger_nodes
         # Avoid initialization warnings.
         @swagger_root_node ||= nil
-        @swagger_path_node_map ||= {}
+        @@swagger_path_node_map ||= {}
         @swagger_schema_node_map ||= nil
         @swagger_api_root_node_map ||= {}
         @swagger_models_node ||= nil
         @swagger_components_node ||= nil
 
         data = {root_node: @swagger_root_node}
-        data[:path_node_map] = @swagger_path_node_map
+        data[:path_node_map] = @@swagger_path_node_map
         data[:schema_node_map] = @swagger_schema_node_map
         data[:api_node_map] = @swagger_api_root_node_map
         data[:models_node] = @swagger_models_node
