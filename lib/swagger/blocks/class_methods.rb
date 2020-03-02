@@ -10,7 +10,7 @@ module Swagger
       end
 
       def version
-        if defined?(@swagger_root_node) && @swagger_root_node.data[:info] && @swagger_root_node.data[:info].version == '3.0.0'
+        if defined?(@swagger_root_node) && @swagger_root_node.data[:openapi] && @swagger_root_node.data[:openapi] == '3.0.0'
           '3.0.0'
         else
           '2.0'
