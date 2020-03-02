@@ -20,7 +20,13 @@ module Swagger
 
           # 2.0
           if swagger_nodes[:path_node_map]
-            path_node_map.merge!(swagger_nodes[:path_node_map])
+            swagger_nodes[:path_node_map].each_key do |path|
+              if path_node_map.include?(path)
+                path_node_map[path].data.merge!(swagger_nodes[:path_node_map][path].data)
+              else
+                path_node_map[path] = swagger_nodes[:path_node_map][path]
+              end
+           end
           end
           if swagger_nodes[:schema_node_map]
             schema_node_map.merge!(swagger_nodes[:schema_node_map])

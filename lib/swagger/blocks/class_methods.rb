@@ -6,6 +6,7 @@ module Swagger
       # v2.0: Defines a Swagger Object
       # v2.0: https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#swagger-object
       def swagger_root(inline_keys = nil, &block)
+        # @@swagger_path_node_map = {}
         @swagger_root_node ||= Swagger::Blocks::Nodes::RootNode.call(inline_keys: inline_keys, &block)
       end
 
@@ -24,17 +25,18 @@ module Swagger
 
         # TODO enforce that path name begins with a '/'
         #   (or x- , but need to research Vendor Extensions first)
+        # puts "Pre - #{@@swagger_path_node_map.inspect}\n\n"
+        @swagger_path_node_map ||= {}
 
-        @@swagger_path_node_map ||= {}
-
-        path_node = @@swagger_path_node_map[path]
+        path_node = @swagger_path_node_map[path]
         if path_node
           # Merge this path declaration into the previous one
           path_node.instance_eval(&block)
         else
           # First time we've seen this path
-          @@swagger_path_node_map[path] = Swagger::Blocks::Nodes::PathNode.call(version: version, &block)
+          @swagger_path_node_map[path] = Swagger::Blocks::Nodes::PathNode.call(version: version, &block)
         end
+        # puts "Post - #{@@swagger_path_node_map.inspect}\n\n"
       end
 
       # v2.0: Defines a Swagger Definition Schema,
@@ -60,14 +62,14 @@ module Swagger
       def _swagger_nodes
         # Avoid initialization warnings.
         @swagger_root_node ||= nil
-        @@swagger_path_node_map ||= {}
+        @swagger_path_node_map ||= {}
         @swagger_schema_node_map ||= nil
         @swagger_api_root_node_map ||= {}
         @swagger_models_node ||= nil
         @swagger_components_node ||= nil
 
         data = {root_node: @swagger_root_node}
-        data[:path_node_map] = @@swagger_path_node_map
+        data[:path_node_map] = @swagger_path_node_map
         data[:schema_node_map] = @swagger_schema_node_map
         data[:api_node_map] = @swagger_api_root_node_map
         data[:models_node] = @swagger_models_node
