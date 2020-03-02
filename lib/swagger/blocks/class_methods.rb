@@ -6,7 +6,6 @@ module Swagger
       # v2.0: Defines a Swagger Object
       # v2.0: https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#swagger-object
       def swagger_root(inline_keys = nil, &block)
-        # @@swagger_path_node_map = {}
         @swagger_root_node ||= Swagger::Blocks::Nodes::RootNode.call(inline_keys: inline_keys, &block)
       end
 
@@ -25,7 +24,6 @@ module Swagger
 
         # TODO enforce that path name begins with a '/'
         #   (or x- , but need to research Vendor Extensions first)
-        # puts "Pre - #{@@swagger_path_node_map.inspect}\n\n"
         @swagger_path_node_map ||= {}
 
         path_node = @swagger_path_node_map[path]
@@ -36,7 +34,6 @@ module Swagger
           # First time we've seen this path
           @swagger_path_node_map[path] = Swagger::Blocks::Nodes::PathNode.call(version: version, &block)
         end
-        # puts "Post - #{@@swagger_path_node_map.inspect}\n\n"
       end
 
       # v2.0: Defines a Swagger Definition Schema,
