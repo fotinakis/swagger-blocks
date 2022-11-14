@@ -2,17 +2,16 @@ module Swagger
   module Blocks
     # Base node for representing every object in the Swagger DSL.
     class Node
-      attr_accessor :name
+      attr_accessor :parent, :name
       attr_writer :version
       VERSION_2 = '2.0'
       VERSION_3 = '3.0.0'
 
-      def self.call(options = {}, &block)
+      def self.call(parent: nil, name: nil, version: nil, inline_keys: nil, &block)
         # Create a new instance and evaluate the block into it.
         instance = new
-        instance.name = options[:name] if options[:name]
-        instance.version = options[:version]
-        instance.keys options[:inline_keys]
+        instance.parent, instance.name, instance.version = parent, name, version
+        instance.keys inline_keys
         instance.instance_eval(&block) if block
         instance
       end

@@ -9,20 +9,20 @@ module Swagger
         def operation(op, inline_keys = nil, &block)
           op = op.to_sym
           raise ArgumentError.new("#{name} not in #{OPERATION_TYPES}") if !OPERATION_TYPES.include?(op)
-          self.data[op] = Swagger::Blocks::Nodes::OperationNode.call(version: version, inline_keys: inline_keys, &block)
+          self.data[op] = Swagger::Blocks::Nodes::OperationNode.call(parent: self, version: version, inline_keys: inline_keys, &block)
         end
 
         def parameter(inline_keys = nil, &block)
           inline_keys = {'$ref' => "#/parameters/#{inline_keys}"} if inline_keys.is_a?(Symbol)
 
           self.data[:parameters] ||= []
-          self.data[:parameters] << Swagger::Blocks::Nodes::ParameterNode.call(version: version, inline_keys: inline_keys, &block)
+          self.data[:parameters] << Swagger::Blocks::Nodes::ParameterNode.call(parent: self, version: version, inline_keys: inline_keys, &block)
         end
 
         def server(inline_keys = nil, &block)
           raise NotSupportedError unless is_openapi_3_0?
           self.data[:servers] ||= []
-          self.data[:servers] << Swagger::Blocks::Nodes::ServerNode.call(version: version, inline_keys: inline_keys, &block)
+          self.data[:servers] << Swagger::Blocks::Nodes::ServerNode.call(parent: self, version: version, inline_keys: inline_keys, &block)
         end
       end
     end

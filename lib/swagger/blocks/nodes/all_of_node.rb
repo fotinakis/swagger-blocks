@@ -35,7 +35,7 @@ module Swagger
         end
 
         def schema(inline_keys = nil, &block)
-          data << Swagger::Blocks::Nodes::SchemaNode.call(version: version, inline_keys: inline_keys, &block)
+          data << Swagger::Blocks::Nodes::SchemaNode.call(parent: self, version: version, inline_keys: inline_keys, &block)
         end
       end
     end

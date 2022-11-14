@@ -3,7 +3,7 @@ module Swagger
     module Nodes
       class PropertyNode < Node
         def items(inline_keys = nil, &block)
-          self.data[:items] = Swagger::Blocks::Nodes::ItemsNode.call(version: version, inline_keys: inline_keys, &block)
+          self.data[:items] = Swagger::Blocks::Nodes::ItemsNode.call(parent: self, version: version, inline_keys: inline_keys, &block)
         end
 
         def property(name, inline_keys = nil, &block)
@@ -14,7 +14,7 @@ module Swagger
 
         def one_of(&block)
           self.data[:oneOf] ||= []
-          self.data[:oneOf] << Swagger::Blocks::Nodes::OneOfNode.call(version: version, &block)
+          self.data[:oneOf] << Swagger::Blocks::Nodes::OneOfNode.call(parent: self, version: version, &block)
         end
       end
     end

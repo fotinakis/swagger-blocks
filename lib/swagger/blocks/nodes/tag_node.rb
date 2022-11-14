@@ -7,7 +7,7 @@ module Swagger
         # TODO support ^x- Vendor Extensions
 
         def externalDocs(inline_keys = nil, &block)
-          self.data[:externalDocs] = Swagger::Blocks::Nodes::ExternalDocsNode.call(version: version, inline_keys: inline_keys, &block)
+          self.data[:externalDocs] = Swagger::Blocks::Nodes::ExternalDocsNode.call(parent: self, version: version, inline_keys: inline_keys, &block)
         end
       end
     end
