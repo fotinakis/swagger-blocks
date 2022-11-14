@@ -5,6 +5,14 @@ module Swagger
       class PathNode < Node
         OPERATION_TYPES = [:get, :put, :post, :delete, :options, :head, :patch].freeze
 
+        attr_accessor :path
+
+        def self.call(parent: nil, name: nil, version: nil, inline_keys: nil, **internal_data, &block)
+          instance = super
+          instance.path = internal_data[:path]
+          instance
+        end
+
         # TODO support ^x- Vendor Extensions
         def operation(op, inline_keys = nil, &block)
           op = op.to_sym

@@ -33,7 +33,7 @@ module Swagger
           path_node.instance_eval(&block)
         else
           # First time we've seen this path
-          @swagger_path_node_map[path] = Swagger::Blocks::Nodes::PathNode.call(version: version, &block)
+          @swagger_path_node_map[path] = Swagger::Blocks::Nodes::PathNode.call(version: version, path: path.to_s, &block)
         end
       end
 

@@ -7,7 +7,7 @@ module Swagger
       VERSION_2 = '2.0'
       VERSION_3 = '3.0.0'
 
-      def self.call(parent: nil, name: nil, version: nil, inline_keys: nil, &block)
+      def self.call(parent: nil, name: nil, version: nil, inline_keys: nil, **internal_data, &block)
         # Create a new instance and evaluate the block into it.
         instance = new
         instance.parent, instance.name, instance.version = parent, name, version
