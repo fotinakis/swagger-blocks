@@ -17,7 +17,7 @@ module Swagger
         def operation(op, inline_keys = nil, &block)
           op = op.to_sym
           raise ArgumentError.new("#{name} not in #{OPERATION_TYPES}") if !OPERATION_TYPES.include?(op)
-          self.data[op] = Swagger::Blocks::Nodes::OperationNode.call(parent: self, version: version, inline_keys: inline_keys, &block)
+          self.data[op] = Swagger::Blocks::Nodes::OperationNode.call(parent: self, version: version, inline_keys: inline_keys, operation: op, &block)
         end
 
         def parameter(inline_keys = nil, &block)

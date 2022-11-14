@@ -3,6 +3,14 @@ module Swagger
     module Nodes
       # v2.0: https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#operation-object
       class OperationNode < Node
+        attr_accessor :operation
+
+        def self.call(parent: nil, name: nil, version: nil, inline_keys: nil, **internal_data, &block)
+          instance = super
+          instance.operation = internal_data[:operation]
+          instance
+        end
+
         def parameter(inline_keys = nil, &block)
           inline_keys = {'$ref' => "#/parameters/#{inline_keys}"} if inline_keys.is_a?(Symbol)
 
