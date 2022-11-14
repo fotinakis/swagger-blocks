@@ -452,6 +452,32 @@ operation :post do
 end
 ```
 
+Additionally, many APIs have standard responses based on the path or operation. You can retrieve references to these in order to DRY up code.
+
+```ruby
+module SwaggerResponses
+  module PostResponses
+    def self.extended(base)
+      operation = base.operation
+      path = base.parent.path
+
+      return unless operation == :post
+      base.response 201 do
+        key :description, dynamic_description_based_on_path
+        schema do
+          key :'$ref', dynamic_ref_name_based_on_path
+        end
+      end
+    end
+  end
+end
+
+operation :post do
+  extend SwaggerResponses::PostResponses
+  # ...
+end
+```
+
 ## Reference
 
 See the [swagger_v2_blocks_spec.rb](https://github.com/fotinakis/swagger-blocks/blob/master/spec/lib/swagger_v2_blocks_spec.rb) for examples of more complex features and declarations possible.

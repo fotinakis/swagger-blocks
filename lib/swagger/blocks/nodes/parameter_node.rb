@@ -4,16 +4,16 @@ module Swagger
       # v2.0: https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#parameter-object
       class ParameterNode < Node
         def schema(inline_keys = nil, &block)
-          self.data[:schema] = Swagger::Blocks::Nodes::SchemaNode.call(version: version, inline_keys: inline_keys, &block)
+          self.data[:schema] = Swagger::Blocks::Nodes::SchemaNode.call(parent: self, version: version, inline_keys: inline_keys, &block)
         end
 
         def items(inline_keys = nil, &block)
-          self.data[:items] = Swagger::Blocks::Nodes::ItemsNode.call(version: version, inline_keys: inline_keys, &block)
+          self.data[:items] = Swagger::Blocks::Nodes::ItemsNode.call(parent: self, version: version, inline_keys: inline_keys, &block)
         end
 
         def example(name, inline_keys = nil, &block)
           self.data[:examples] ||= {}
-          self.data[:examples][name] = Swagger::Blocks::Nodes::ExampleNode.call(version: version, inline_keys: inline_keys, &block)
+          self.data[:examples][name] = Swagger::Blocks::Nodes::ExampleNode.call(parent: self, version: version, inline_keys: inline_keys, &block)
         end
       end
     end
