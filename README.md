@@ -1,6 +1,6 @@
 # Swagger::Blocks
 
-[![Build Status](https://travis-ci.org/fotinakis/swagger-blocks.svg?branch=master)](https://travis-ci.org/fotinakis/swagger-blocks)
+[![Build Status](https://github.com/fotinakis/swagger-blocks/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/fotinakis/swagger-blocks/actions/workflows/test.yml)
 [![Gem Version](https://badge.fury.io/rb/swagger-blocks.svg)](http://badge.fury.io/rb/swagger-blocks)
 
 Swagger::Blocks is a DSL for pure Ruby code blocks that can be turned into JSON.
